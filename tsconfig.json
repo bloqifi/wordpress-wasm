@@ -1,0 +1,8 @@
+{
+	"references": [
+		{ "path": "packages/php-wasm" },
+		{ "path": "packages/php-wasm-browser" },
+		{ "path": "packages/wordpress-wasm" }
+	],
+	"files": []
+}
