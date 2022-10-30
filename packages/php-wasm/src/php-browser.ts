@@ -1,4 +1,4 @@
-import PHPServer from "./php-server";
+import type PHPServer from "./php-server";
 
 /**
  * A fake web browser that handles PHPServer's cookies and redirects
@@ -8,11 +8,13 @@ export default class PHPBrowser {
   #cookies;
   #config;
 
+  server: PHPServer;
+
   /**
-   * @param {PHPServer} server The PHP server to browse.
-   * @param {PHPBrowserConfiguration} config The browser configuration. 
+   * @param server The PHP server to browse.
+   * @param config The browser configuration. 
    */
-  constructor(server, config = {}) {
+  constructor(server: PHPServer, config: PHPBrowserConfiguration = {}) {
     this.server = server;
     this.#cookies = {};
     this.#config = {
@@ -53,7 +55,7 @@ export default class PHPBrowser {
     ) {
       const parsedUrl = new URL(
         response.headers.location[0],
-        this.server.ABSOLUTE_URL
+        this.server.absoluteUrl
       );
       return this.request(
         {
@@ -82,9 +84,15 @@ export default class PHPBrowser {
   }
 }
 
-/**
- * @typedef {Object} PHPBrowserConfiguration
- * @property {boolean} handleRedirects Should handle redirects internally?
- * @property {number} maxRedirects The maximum number of redirects to follow internally. Once
- *                                 exceeded, request() will return the redirecting response.
- */
+interface PHPBrowserConfiguration {
+  /**
+   * Should handle redirects internally?
+   */
+  handleRedirects?: boolean;
+  /**
+   * The maximum number of redirects to follow internally. Once
+   * exceeded, request() will return the redirecting response.
+   */
+  maxRedirects?: number;
+};
+

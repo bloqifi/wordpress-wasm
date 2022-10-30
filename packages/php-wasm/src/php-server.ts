@@ -1,3 +1,5 @@
+import type { PHP, PHPOutput } from "./php";
+
 /**
  * A fake PHP server that handles HTTP requests but does not
  * bind to any port.
@@ -29,30 +31,33 @@
  * ```
  */
 export default class PHPServer {
-	#DOCROOT;
-	#PROTOCOL;
-	#HOSTNAME;
-	#PORT;
-	#HOST;
-	#PATHNAME;
-    #ABSOLUTE_URL;
+	#DOCROOT: string;
+	#PROTOCOL: string;
+	#HOSTNAME: string;
+	#PORT: number;
+	#HOST: string;
+	#PATHNAME: string;
+	#ABSOLUTE_URL: string;
+	
+	php: PHP;
+	#isStaticFilePath: (path: string) => boolean;
 
 	/**
-	 * @param {PHP} php PHP instance.
-	 * @param {PHPServerConfigation} config Server configuration.
+	 * @param php PHP instance.
+	 * @param config Server configuration.
 	 */
-    constructor(php, {
+    constructor(php: PHP, {
         documentRoot = '/var/www/',
         absoluteUrl,
         isStaticFilePath = () => false
-    }) {
+    }: PHPServerConfigation) {
         this.php = php;
         this.#DOCROOT = documentRoot;
-        this.isStaticFilePath = isStaticFilePath;
+        this.#isStaticFilePath = isStaticFilePath;
 
         const url = new URL(absoluteUrl);
         this.#HOSTNAME = url.hostname;
-        this.#PORT = url.port ? url.port : url.protocol === 'https:' ? 443 : 80;
+        this.#PORT = url.port ? Number(url.port) : url.protocol === 'https:' ? 443 : 80;
         this.#PROTOCOL = (url.protocol || '').replace(':', '');
 		const isNonStandardPort = this.#PORT !== 443 && this.#PORT !== 80;
 		this.#HOST = [
@@ -75,12 +80,12 @@ export default class PHPServer {
 	 * Serves the request – either by serving a static file, or by
 	 * dispatching it to the PHP runtime.
 	 * 
-	 * @param {Request} request The request.
-	 * @returns {Response} The response.
+	 * @param request The request.
+	 * @returns The response.
 	 */
-	async request(request) {
+	async request(request: Request): Promise<Response> {
 		const serverPath = this.#withoutServerPathname(request.path);
-		if(this.isStaticFilePath(serverPath)) {
+		if(this.#isStaticFilePath(serverPath)) {
 			return this.#serveStaticFile(serverPath);
 		} else {
 			return await this.#dispatchToPHP(request);
@@ -90,10 +95,10 @@ export default class PHPServer {
 	/**
 	 * Serves a static file from the PHP filesystem.
 	 * 
-	 * @param {string} path The requested static file path.
-	 * @returns {Response} The response.
+	 * @param path The requested static file path.
+	 * @returns The response.
 	 */
-	#serveStaticFile(path) {
+	#serveStaticFile(path: string): Response {
 		const fsPath = `${this.#DOCROOT}${path}`;
 
 		if(!this.php.fileExists(fsPath)){
@@ -109,7 +114,7 @@ export default class PHPServer {
 		return {
 			body: arrayBuffer,
 			headers: {
-				'Content-length': arrayBuffer.byteLength,
+				'Content-length': `${arrayBuffer.byteLength}`,
 				// @TODO: Infer the content-type from the arrayBuffer instead of the file path.
 				//        The code below won't return the correct mime-type if the extension
 				//        was tampered with.
@@ -117,6 +122,7 @@ export default class PHPServer {
 				'Accept-Ranges': 'bytes',
 				'Cache-Control': 'public, max-age=0'
 			},
+			statusCode: 200,
 			exitCode: 0,
 			rawError: [''],
 		};
@@ -314,15 +320,15 @@ REQUEST,
 	 *    // ...
 	 * )
 	 *
-	 * @param {Object} files JavaScript files keyed by their HTTP upload name.
+	 * @param files JavaScript files keyed by their HTTP upload name.
 	 * @return $_FILES-compatible object.
 	 */
-	async #prepare_FILES(files = {}) {
+	async #prepare_FILES(files: Record<string, File> = {}): Promise<_FILES> {
 		if(Object.keys(files).length) {
 			this.php.initUploadedFilesHash();
 		}
 
-		const _FILES = {};
+		const _FILES: _FILES = {};
 		for (const [key, value] of Object.entries(files)) {
 			const tmpName = Math.random().toFixed(20);
 			const tmpPath = `/tmp/${tmpName}`;
@@ -350,11 +356,11 @@ REQUEST,
 	 *
 	 * @param _FILES $_FILES-compatible object.
 	 */
-	#cleanup_FILES(_FILES={}) {
+	#cleanup_FILES(_FILES:_FILES={}) {
 		if(Object.keys(_FILES).length) {
 			this.php.destroyUploadedFilesHash();
 		}
-		for (const [, value] of Object.entries(_FILES)) {
+		for (const value of Object.values(_FILES)) {
 			if(this.php.fileExists(value.tmp_name)){
 				this.php.unlink(value.tmp_name);
 			}
@@ -369,15 +375,16 @@ REQUEST,
  * The response body is sourced from stdout, and
  * the headers and status code are sourced from stderr.
  * 
- * @param {import("./php").Output} result Raw output of PHP.run().
- * @returns {Response} Parsed response
+ * @param result Raw output of PHP.run().
+ * @returns Parsed response
  */
-function parseResponse(result) {
+function parseResponse(result: PHPOutput): Response {
 	const response = {
 		body: result.stdout,
 		headers: {},
 		exitCode: result.exitCode,
 		rawError: result.stderr || [''],
+		statusCode: -1
 	};
 	// Try to parse each line of stderr as JSON and
 	// look for familiar data structurs.
@@ -419,10 +426,10 @@ function parseResponse(result) {
  * // { 'Content-type': ['text/html'], 'Content-length': [123] }
  * ```
  * 
- * @param {string[]} rawHeaders Raw HTTP header lines.
- * @returns {Headers} Parsed headers.
+ * @param rawHeaders Raw HTTP header lines.
+ * @returns Parsed headers.
  */
-function parseHeaders(rawHeaders) {
+function parseHeaders(rawHeaders: string[]): Headers {
 	const parsed = {};
 	for (const header of rawHeaders) {
 		const splitAt = header.indexOf(':');
@@ -445,10 +452,10 @@ function parseHeaders(rawHeaders) {
  *       A naive function like this one can be inaccurate
  *       and potentially have negative security consequences.
  * 
- * @param {string} path The file path
- * @returns {string} The inferred mime type.
+ * @param path The file path
+ * @returns The inferred mime type.
  */
-function inferMimeType(path) {
+function inferMimeType(path: string): string {
 	const extension = path.split('.').pop();
 	switch (extension) {
 		case 'css':
@@ -490,34 +497,94 @@ function inferMimeType(path) {
 	}
 }
 
-/**
- * @typedef {Object} PHPServerConfigation
- * @property {string} documentRoot The directory in the PHP filesystem where the server will look 
- *                                 for the files to serve. Default: `/var/www`.
- * @property {string} absoluteUrl Server URL. Used to populate $_SERVER details like HTTP_HOST.
- * @property {(path: string) => boolean} isStaticFilePath Optional. Callback used by the PHPServer to decide whether
- *                                                        the requested path refers to a PHP file or a static file.
- */
+interface PHPServerConfigation {
+    /**
+     * The directory in the PHP filesystem where the server will look
+     * for the files to serve. Default: `/var/www`.
+     */
+    documentRoot: string;
+    /**
+     * Server URL. Used to populate $_SERVER details like HTTP_HOST.
+     */
+    absoluteUrl: string;
+    /**
+     * Optional. Callback used by the PHPServer to decide whether
+     * the requested path refers to a PHP file or a static file.
+     */
+    isStaticFilePath?: (path: string) => boolean;
+};
 
-/**
- * @typedef {Object.<string, string>} Headers
- */
-/**
- * @typedef {Object} Request
- * @property {string} path Request path without the query string.
- * @property {string} queryString Optional. Request query string.
- * @property {"GET"|"POST"|"HEAD"|"OPTIONS"|"PATCH"|"PUT"|"DELETE"} method Optional. Request method. Default: `GET`.
- * @property {Headers} headers Optional. Request headers.
- * @property {Object.<string, File>} files Optional. Request files in the {"filename": File} format.
- * @property {Object.<string, any>} _POST Optional. POST data.
- * @property {Object.<string, string>} _COOKIE Optional. Request cookies.
- */
+interface Headers {
+    [x: string]: string;
+};
 
-/**
- * @typedef {Object} Response
- * @property {string|ArrayBuffer} body Response body.
- * @property {Headers} headers Response headers.
- * @property {number} exitCode PHP exit code. Always 0 for static file responses.
- * @property {string[]} rawError Lines logged to stderr. Always [''] for static file responses.
- */
+interface Request {
+    /**
+     * Request path without the query string.
+     */
+    path: string;
+    /**
+     * Optional. Request query string.
+     */
+    queryString: string;
+    /**
+     * Optional. Request method. Default: `GET`.
+     */
+    method: "GET" | "POST" | "HEAD" | "OPTIONS" | "PATCH" | "PUT" | "DELETE";
+    /**
+     * Optional. Request headers.
+     */
+    headers: Headers;
+    /**
+     * Optional. Request files in the {"filename": File} format.
+     */
+    files: {
+        [x: string]: File;
+    };
+    /**
+     * Optional. POST data.
+     */
+    _POST: {
+        [x: string]: any;
+    };
+    /**
+     * Optional. Request cookies.
+     */
+    _COOKIE: {
+        [x: string]: string;
+    };
+};
+interface Response {
+    /**
+     * Response body.
+     */
+    body: string | ArrayBuffer;
+    /**
+     * Response headers.
+     */
+    headers: Headers;
+    /**
+     * Response HTTP status code, e.g. 200.
+     */
+    statusCode: number;
+    /**
+     * PHP exit code. Always 0 for static file responses.
+     */
+    exitCode: number;
+    /**
+     * Lines logged to stderr. Always [''] for static file responses.
+     */
+    rawError: string[];
+};
 
+interface _FILES {
+	[key: string]: _FILE;
+}
+
+interface _FILE {
+	name: string;
+	type: string;
+	tmp_name: string;
+	error: number;
+	size: number;
+}

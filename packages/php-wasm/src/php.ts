@@ -1,6 +1,13 @@
 const STR = "string";
 const NUM = "number";
 
+type JavascriptRuntime = 'NODE' | 'WEB' | 'WEBWORKER';
+
+interface Streams {
+  stdout: string[],
+  stderr: string[],
+};
+
 /**
  * Initializes the PHP runtime with the given arguments and data dependencies.
  * 
@@ -111,23 +118,28 @@ const NUM = "number";
  *  const php = await startPHP(phpLoaderModule, "web", {}, [wordPressLoaderModule]);
  * ```
  * 
- * @param {Module} phpLoaderModule The ESM-wrapped Emscripten module. Consult the Dockerfile for the build process.
- * @param {string} jsEnv The current JavaScript environment. One of: NODE, WEB, or WEBWORKER.
- * @param {Object} phpModuleArgs Optional. The Emscripten module arguments, see https://emscripten.org/docs/api_reference/module.html#affecting-execution.
- * @param {Module[]} dataDependenciesModules. Optional. A list of the ESM-wrapped Emscripten data dependency modules.
- * @returns {PHP} PHP instance. 
+ * @param phpLoaderModule The ESM-wrapped Emscripten module. Consult the Dockerfile for the build process.
+ * @param runtime The current JavaScript environment. One of: NODE, WEB, or WEBWORKER.
+ * @param phpModuleArgs Optional. The Emscripten module arguments, see https://emscripten.org/docs/api_reference/module.html#affecting-execution.
+ * @param dataDependenciesModules. Optional. A list of the ESM-wrapped Emscripten data dependency modules.
+ * @returns PHP instance. 
  */
-export async function startPHP(phpLoaderModule, jsEnv, phpModuleArgs = {}, dataDependenciesModules = []) {
+export async function startPHP(
+  phpLoaderModule: any,
+  runtime: JavascriptRuntime,
+  phpModuleArgs: any = {},
+  dataDependenciesModules: any[] = []
+): Promise<PHP> {
     let resolvePhpReady, resolveDepsReady;
     const depsReady = new Promise(resolve => { resolveDepsReady = resolve; });
     const phpReady = new Promise(resolve => { resolvePhpReady = resolve; });
 
-    const streams = {
+    const streams: Streams = {
       stdout: [],
       stderr: [],
     };
     const loadPHPRuntime = phpLoaderModule.default;
-    const PHPRuntime = loadPHPRuntime(jsEnv, {
+    const PHPRuntime = loadPHPRuntime(runtime, {
       onAbort(reason) {
         console.error("WASM aborted: ");
         console.error(reason);
@@ -182,11 +194,11 @@ export class PHP {
   /**
    * Initializes a PHP runtime.
    * 
-   * @param {Module} Runtime PHP Runtime as initialized by startPHP.
-   * @param {{ stdout: [], stderr: [] }} streams An object pointing to stdout and stderr streams, as initilized by startPHP.
+   * @param Runtime PHP Runtime as initialized by startPHP.
+   * @param streams An object pointing to stdout and stderr streams, as initilized by startPHP.
    */
-  constructor(Runtime, streams) {
-    this.#Runtime = Runtime;
+  constructor(PHPRuntime: any, streams: Streams) {
+    this.#Runtime = PHPRuntime;
     this.#streams = streams;
 
     this.mkdirTree('/usr/local/etc');
@@ -198,7 +210,7 @@ html_errors = 1
 display_startup_errors = On
 session.save_path=/home/web_user
     `);
-    Runtime.ccall("phpwasm_init_context", NUM, [STR], []);
+    this.#Runtime.ccall("phpwasm_init_context", NUM, [STR], []);
   }
 
   /**
@@ -225,10 +237,10 @@ session.save_path=/home/web_user
    * console.log(output.stdout); // "Hello world!"
    * ```
    * 
-   * @param {string} code The PHP code to run.
-   * @returns {Output} The PHP process output.
+   * @param code The PHP code to run.
+   * @returns The PHP process output.
    */
-  run(code) {
+  run(code: string): PHPOutput {
     const exitCode = this.#Runtime.ccall("phpwasm_run", NUM, [STR], [`?>${code}`]);
     const response = {
       exitCode,
@@ -259,9 +271,9 @@ session.save_path=/home/web_user
    * For example, if the path is "/root/php/data", and "/root" already exists,
    * it will create the directories "/root/php" and "/root/php/data".
    * 
-   * @param {string} path The directory path to create.
+   * @param path The directory path to create.
    */
-  mkdirTree(path) {
+  mkdirTree(path: string) {
     this.#Runtime.FS.mkdirTree(path);
   }
   
@@ -269,10 +281,10 @@ session.save_path=/home/web_user
    * Reads a file from the PHP filesystem and returns it as a string.
    * 
    * @throws {FS.ErrnoError} If the file doesn't exist.
-   * @param {string} path The file path to read.
-   * @returns {string} The file contents.
+   * @param path The file path to read.
+   * @returns The file contents.
    */
-  readFileAsText(path) {
+  readFileAsText(path: string): string {
     return new TextDecoder().decode(this.readFileAsBuffer(path));
   }
 
@@ -280,10 +292,10 @@ session.save_path=/home/web_user
    * Reads a file from the PHP filesystem and returns it as an array buffer.
    * 
    * @throws {FS.ErrnoError} If the file doesn't exist.
-   * @param {string} path The file path to read.
-   * @returns {Uint8Array} The file contents.
+   * @param path The file path to read.
+   * @returns The file contents.
    */
-  readFileAsBuffer(path) {
+  readFileAsBuffer(path: string): Uint8Array {
     return this.#Runtime.FS.readFile(path);
   }
 
@@ -291,10 +303,10 @@ session.save_path=/home/web_user
    * Overwrites data in a file in the PHP filesystem.
    * Creates a new file if one doesn't exist yet.
    * 
-   * @param {string} path The file path to write to.
-   * @param {string|Uint8Array} data The data to write to the file.
+   * @param path The file path to write to.
+   * @param data The data to write to the file.
    */
-  writeFile(path, data) {
+  writeFile(path: string, data: string|Uint8Array) {
     return this.#Runtime.FS.writeFile(path, data);
   }
 
@@ -302,19 +314,19 @@ session.save_path=/home/web_user
    * Removes a file from the PHP filesystem.
    * 
    * @throws {FS.ErrnoError} If the file doesn't exist.
-   * @param {string} path The file path to remove.
+   * @param path The file path to remove.
    */
-  unlink(path) {
+  unlink(path: string) {
     this.#Runtime.FS.unlink(path);
   }
 
   /**
    * Checks if a file (or a directory) exists in the PHP filesystem.
    * 
-   * @param {string} path The file path to check.
-   * @returns {boolean} True if the file exists, false otherwise.
+   * @param path The file path to check.
+   * @returns True if the file exists, false otherwise.
    */
-  fileExists(path) {
+  fileExists(path: string): boolean {
     try {
       this.#Runtime.FS.lookupPath(path);
       return true;
@@ -394,9 +406,9 @@ session.save_path=/home/web_user
    * Registers an uploaded file in the internal hash table.
    * 
    * @see initUploadedFilesHash()
-   * @param {string} tmpPath The temporary path of the uploaded file.
+   * @param tmpPath The temporary path of the uploaded file.
    */
-  registerUploadedFile(tmpPath) {
+  registerUploadedFile(tmpPath: string) {
     this.#Runtime.ccall("phpwasm_register_uploaded_file", null, [STR], [tmpPath]);
   }
 
@@ -412,8 +424,15 @@ session.save_path=/home/web_user
 }
 
 /**
- * @typedef {Object} Output
- * @property {number} exitCode Exit code of the PHP process. 0 means success, 1 and 2 mean error.
- * @property {string} stdout Stdout data.
- * @property {string[]} stderr Stderr lines.
+ * Output of the PHP.wasm runtime.
  */
+export interface PHPOutput {
+  /** Exit code of the PHP process. 0 means success, 1 and 2 mean error. */
+  exitCode: number;
+
+  /** Stdout data */
+  stdout: string;
+
+  /** Stderr lines */
+  stderr: string[];
+}
