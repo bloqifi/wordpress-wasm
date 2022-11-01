@@ -47,7 +47,7 @@ let lastRequestId = 0;
  * 
  * @param {Object} target An object that has a `postMessage` method.
  * @param {Object.<string, any>} message A key-value object that can be serialized to JSON.
- * @param  {...any} postMessageArgs Optional. Additional arguments to pass to `postMessage`.
+ * @param  {...any} postMessageArgs Additional arguments to pass to `postMessage`.
  * @returns {number} The message ID for awaitReply().
  */
 export function postMessageExpectReply(
@@ -73,7 +73,7 @@ export function postMessageExpectReply(
  * @param {Object} messageTarget EventEmitter emitting `message` events, e.g. `window`
  *                               or a `Worker` instance.
  * @param {Number} requestId The message ID returned by postMessageExpectReply().
- * @param {Number} timeout Optional. The number of milliseconds to wait for a reply before
+ * @param {Number} timeout The number of milliseconds to wait for a reply before
  *                         throwing an error.
  * @returns {Promise<any>} The reply from the messageTarget.
  */

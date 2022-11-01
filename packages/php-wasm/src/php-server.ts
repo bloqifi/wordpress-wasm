@@ -4,6 +4,7 @@ import type { PHP, PHPOutput } from "./php";
  * A fake PHP server that handles HTTP requests but does not
  * bind to any port.
  * 
+ * @public
  * @example
  * ```js
  * import { createPHP, PHPServer } from 'php-wasm';
@@ -43,8 +44,8 @@ export default class PHPServer {
 	#isStaticFilePath: (path: string) => boolean;
 
 	/**
-	 * @param php PHP instance.
-	 * @param config Server configuration.
+	 * @param php - PHP instance.
+	 * @param config - Server configuration.
 	 */
     constructor(php: PHP, {
         documentRoot = '/var/www/',
@@ -80,10 +81,10 @@ export default class PHPServer {
 	 * Serves the request – either by serving a static file, or by
 	 * dispatching it to the PHP runtime.
 	 * 
-	 * @param request The request.
+	 * @param request - The request.
 	 * @returns The response.
 	 */
-	async request(request: Request): Promise<Response> {
+	async request(request: PHPRequest): Promise<PHPResponse> {
 		const serverPath = this.#withoutServerPathname(request.path);
 		if(this.#isStaticFilePath(serverPath)) {
 			return this.#serveStaticFile(serverPath);
@@ -95,10 +96,10 @@ export default class PHPServer {
 	/**
 	 * Serves a static file from the PHP filesystem.
 	 * 
-	 * @param path The requested static file path.
+	 * @param path - The requested static file path.
 	 * @returns The response.
 	 */
-	#serveStaticFile(path: string): Response {
+	#serveStaticFile(path: string): PHPResponse {
 		const fsPath = `${this.#DOCROOT}${path}`;
 
 		if(!this.php.fileExists(fsPath)){
@@ -133,10 +134,10 @@ export default class PHPServer {
 	 * superglobals populated.
 	 * 
 	 * @see #prepare_FILES for details on how JavaScript `files` are converted to $_FILES.
-	 * @param {Request} request The request.
-	 * @returns {Response} The response.
+	 * @param request - The request.
+	 * @returns The response.
 	 */
-	async #dispatchToPHP(request) {
+	async #dispatchToPHP(request: PHPRequest): Promise<PHPResponse> {
 		const _FILES = await this.#prepare_FILES(request.files);
 
         try {
@@ -243,10 +244,10 @@ REQUEST,
 	 * 
 	 * Fall back to index.php as if there was a url rewriting rule in place.
 	 * 
-	 * @param {string} requestedPath The requested pathname.
-	 * @returns {string} The resolved filesystem path.
+	 * @param requestedPath - The requested pathname.
+	 * @returns The resolved filesystem path.
 	 */
-    #resolvePHPFilePath(requestedPath) {
+    #resolvePHPFilePath(requestedPath: string): string {
         let filePath = this.#withoutServerPathname(requestedPath);
         
 		// If the path mentions a .php extension, that's our file's path.
@@ -289,10 +290,10 @@ REQUEST,
 	 * This way, PHPSerer can resolve just the `/index.php` instead
 	 * of `/subdirectory/index.php` which is likely undesirable.
 	 * 
-	 * @param {string} requestedPath The requested path.
-	 * @returns {string} A path with the server prefix removed.
+	 * @param requestedPath - The requested path.
+	 * @returns A path with the server prefix removed.
 	 */
-	#withoutServerPathname(requestedPath) {
+	#withoutServerPathname(requestedPath: string): string {
 		if (!this.#PATHNAME) {
 			return requestedPath;
 		}
@@ -320,7 +321,7 @@ REQUEST,
 	 *    // ...
 	 * )
 	 *
-	 * @param files JavaScript files keyed by their HTTP upload name.
+	 * @param files - JavaScript files keyed by their HTTP upload name.
 	 * @return $_FILES-compatible object.
 	 */
 	async #prepare_FILES(files: Record<string, File> = {}): Promise<_FILES> {
@@ -354,7 +355,7 @@ REQUEST,
 	 * * Frees the PHP's rfc1867_uploaded_files HashTable
 	 * * Removes the temporary files from the filesystem
 	 *
-	 * @param _FILES $_FILES-compatible object.
+	 * @param _FILES - $_FILES-compatible object.
 	 */
 	#cleanup_FILES(_FILES:_FILES={}) {
 		if(Object.keys(_FILES).length) {
@@ -375,10 +376,10 @@ REQUEST,
  * The response body is sourced from stdout, and
  * the headers and status code are sourced from stderr.
  * 
- * @param result Raw output of PHP.run().
+ * @param result - Raw output of PHP.run().
  * @returns Parsed response
  */
-function parseResponse(result: PHPOutput): Response {
+function parseResponse(result: PHPOutput): PHPResponse {
 	const response = {
 		body: result.stdout,
 		headers: {},
@@ -426,7 +427,7 @@ function parseResponse(result: PHPOutput): Response {
  * // { 'Content-type': ['text/html'], 'Content-length': [123] }
  * ```
  * 
- * @param rawHeaders Raw HTTP header lines.
+ * @param rawHeaders - Raw HTTP header lines.
  * @returns Parsed headers.
  */
 function parseHeaders(rawHeaders: string[]): Headers {
@@ -452,7 +453,7 @@ function parseHeaders(rawHeaders: string[]): Headers {
  *       A naive function like this one can be inaccurate
  *       and potentially have negative security consequences.
  * 
- * @param path The file path
+ * @param path - The file path
  * @returns The inferred mime type.
  */
 function inferMimeType(path: string): string {
@@ -497,7 +498,7 @@ function inferMimeType(path: string): string {
 	}
 }
 
-interface PHPServerConfigation {
+export interface PHPServerConfigation {
     /**
      * The directory in the PHP filesystem where the server will look
      * for the files to serve. Default: `/var/www`.
@@ -508,53 +509,46 @@ interface PHPServerConfigation {
      */
     absoluteUrl: string;
     /**
-     * Optional. Callback used by the PHPServer to decide whether
+     * Callback used by the PHPServer to decide whether
      * the requested path refers to a PHP file or a static file.
      */
     isStaticFilePath?: (path: string) => boolean;
 };
 
-interface Headers {
-    [x: string]: string;
-};
+type Headers = Record<string, string>
 
-interface Request {
+export interface PHPRequest {
     /**
      * Request path without the query string.
      */
     path: string;
     /**
-     * Optional. Request query string.
+     * Request query string.
      */
-    queryString: string;
+    queryString?: string;
     /**
-     * Optional. Request method. Default: `GET`.
+     * Request method. Default: `GET`.
      */
-    method: "GET" | "POST" | "HEAD" | "OPTIONS" | "PATCH" | "PUT" | "DELETE";
+    method?: "GET" | "POST" | "HEAD" | "OPTIONS" | "PATCH" | "PUT" | "DELETE";
     /**
-     * Optional. Request headers.
+     * Request headers.
      */
-    headers: Headers;
+	headers?: Headers;
     /**
-     * Optional. Request files in the {"filename": File} format.
+     * Request files in the {"filename": File} format.
      */
-    files: {
-        [x: string]: File;
-    };
+    files?: Record<string, File>;
     /**
-     * Optional. POST data.
+     * POST data.
      */
-    _POST: {
-        [x: string]: any;
-    };
+    _POST?: Record<string, any>;
     /**
-     * Optional. Request cookies.
+     * Request cookies.
      */
-    _COOKIE: {
-        [x: string]: string;
-    };
+    _COOKIE?: Record<string, string>;
 };
-interface Response {
+
+export interface PHPResponse {
     /**
      * Response body.
      */
@@ -577,9 +571,7 @@ interface Response {
     rawError: string[];
 };
 
-interface _FILES {
-	[key: string]: _FILE;
-}
+type _FILES = Record<string, _FILE>;
 
 interface _FILE {
 	name: string;

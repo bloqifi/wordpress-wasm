@@ -7,7 +7,7 @@ const noop = () => {};
 
 /**
  * @typedef {Object} WorkerThreadConfig
- * @property {Function} onDownloadProgress Optional. A function to call when a download
+ * @property {Function} onDownloadProgress A function to call when a download
  * 									       progress event is received from the worker
  */
 

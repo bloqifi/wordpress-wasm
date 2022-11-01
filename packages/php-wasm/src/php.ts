@@ -91,7 +91,7 @@ interface Streams {
  * 3. Prepend `export const dependenciesTotalSize = <DATA FILE SIZE>;`
  * 4. Append `}`
  * 
- * Be sure to use the `--export-name="emscriptenPHPModule" file_packager.py option.
+ * Be sure to use the `--export-name="emscriptenPHPModule"` file_packager.py option.
  * 
  * You want the final output to look as follows:
  * 
@@ -118,10 +118,11 @@ interface Streams {
  *  const php = await startPHP(phpLoaderModule, "web", {}, [wordPressLoaderModule]);
  * ```
  * 
- * @param phpLoaderModule The ESM-wrapped Emscripten module. Consult the Dockerfile for the build process.
- * @param runtime The current JavaScript environment. One of: NODE, WEB, or WEBWORKER.
- * @param phpModuleArgs Optional. The Emscripten module arguments, see https://emscripten.org/docs/api_reference/module.html#affecting-execution.
- * @param dataDependenciesModules. Optional. A list of the ESM-wrapped Emscripten data dependency modules.
+ * @public
+ * @param phpLoaderModule - The ESM-wrapped Emscripten module. Consult the Dockerfile for the build process.
+ * @param runtime - The current JavaScript environment. One of: NODE, WEB, or WEBWORKER.
+ * @param phpModuleArgs - The Emscripten module arguments, see https://emscripten.org/docs/api_reference/module.html#affecting-execution.
+ * @param dataDependenciesModules - A list of the ESM-wrapped Emscripten data dependency modules.
  * @returns PHP instance. 
  */
 export async function startPHP(
@@ -184,6 +185,7 @@ export async function startPHP(
  * It exposes a minimal set of methods to run PHP scripts and to
  * interact with the PHP filesystem.
  * 
+ * @public
  * @see {startPHP} This class is not meant to be used directly. Use `startPHP` instead.
  */
 export class PHP {
@@ -194,8 +196,8 @@ export class PHP {
   /**
    * Initializes a PHP runtime.
    * 
-   * @param Runtime PHP Runtime as initialized by startPHP.
-   * @param streams An object pointing to stdout and stderr streams, as initilized by startPHP.
+   * @param Runtime - PHP Runtime as initialized by startPHP.
+   * @param streams - An object pointing to stdout and stderr streams, as initilized by startPHP.
    */
   constructor(PHPRuntime: any, streams: Streams) {
     this.#Runtime = PHPRuntime;
@@ -237,7 +239,7 @@ session.save_path=/home/web_user
    * console.log(output.stdout); // "Hello world!"
    * ```
    * 
-   * @param code The PHP code to run.
+   * @param code - The PHP code to run.
    * @returns The PHP process output.
    */
   run(code: string): PHPOutput {
@@ -271,7 +273,7 @@ session.save_path=/home/web_user
    * For example, if the path is "/root/php/data", and "/root" already exists,
    * it will create the directories "/root/php" and "/root/php/data".
    * 
-   * @param path The directory path to create.
+   * @param path - The directory path to create.
    */
   mkdirTree(path: string) {
     this.#Runtime.FS.mkdirTree(path);
@@ -281,7 +283,7 @@ session.save_path=/home/web_user
    * Reads a file from the PHP filesystem and returns it as a string.
    * 
    * @throws {FS.ErrnoError} If the file doesn't exist.
-   * @param path The file path to read.
+   * @param path - The file path to read.
    * @returns The file contents.
    */
   readFileAsText(path: string): string {
@@ -292,7 +294,7 @@ session.save_path=/home/web_user
    * Reads a file from the PHP filesystem and returns it as an array buffer.
    * 
    * @throws {FS.ErrnoError} If the file doesn't exist.
-   * @param path The file path to read.
+   * @param path - The file path to read.
    * @returns The file contents.
    */
   readFileAsBuffer(path: string): Uint8Array {
@@ -303,8 +305,8 @@ session.save_path=/home/web_user
    * Overwrites data in a file in the PHP filesystem.
    * Creates a new file if one doesn't exist yet.
    * 
-   * @param path The file path to write to.
-   * @param data The data to write to the file.
+   * @param path - The file path to write to.
+   * @param data - The data to write to the file.
    */
   writeFile(path: string, data: string|Uint8Array) {
     return this.#Runtime.FS.writeFile(path, data);
@@ -314,7 +316,7 @@ session.save_path=/home/web_user
    * Removes a file from the PHP filesystem.
    * 
    * @throws {FS.ErrnoError} If the file doesn't exist.
-   * @param path The file path to remove.
+   * @param path - The file path to remove.
    */
   unlink(path: string) {
     this.#Runtime.FS.unlink(path);
@@ -323,7 +325,7 @@ session.save_path=/home/web_user
   /**
    * Checks if a file (or a directory) exists in the PHP filesystem.
    * 
-   * @param path The file path to check.
+   * @param path - The file path to check.
    * @returns True if the file exists, false otherwise.
    */
   fileExists(path: string): boolean {
@@ -343,19 +345,19 @@ session.save_path=/home/web_user
    * with those $_FILES entries that are not in an internal hash table. This
    * is a security feature, see this exceprt from the `is_uploaded_file` documentation:
    * 
-   * > is_uploaded_file
-   * >
-   * > Returns true if the file named by filename was uploaded via HTTP POST. This is
-   * > useful to help ensure that a malicious user hasn't tried to trick the script into
-   * > working on files upon which it should not be working--for instance, /etc/passwd.
-   * >
-   * > This sort of check is especially important if there is any chance that anything
-   * > done with uploaded files could reveal their contents to the user, or even to other
-   * > users on the same system.
-   * >
-   * > For proper working, the function is_uploaded_file() needs an argument like
-   * > $_FILES['userfile']['tmp_name'], - the name of the uploaded file on the client's
-   * > machine $_FILES['userfile']['name'] does not work.
+   *    is_uploaded_file
+   * 
+   *    Returns true if the file named by filename was uploaded via HTTP POST. This is
+   *    useful to help ensure that a malicious user hasn't tried to trick the script into
+   *    working on files upon which it should not be working--for instance, /etc/passwd.
+   * 
+   *    This sort of check is especially important if there is any chance that anything
+   *    done with uploaded files could reveal their contents to the user, or even to other
+   *    users on the same system.
+   * 
+   *    For proper working, the function is_uploaded_file() needs an argument like
+   *    $_FILES['userfile']['tmp_name'], - the name of the uploaded file on the client's
+   *    machine $_FILES['userfile']['name'] does not work.
    * 
    * This PHP.wasm implementation doesn't run any PHP request machinery, so PHP never has
    * a chance to note which files were actually uploaded. In practice, `is_uploaded_file()`
@@ -406,7 +408,7 @@ session.save_path=/home/web_user
    * Registers an uploaded file in the internal hash table.
    * 
    * @see initUploadedFilesHash()
-   * @param tmpPath The temporary path of the uploaded file.
+   * @param tmpPath - The temporary path of the uploaded file.
    */
   registerUploadedFile(tmpPath: string) {
     this.#Runtime.ccall("phpwasm_register_uploaded_file", null, [STR], [tmpPath]);

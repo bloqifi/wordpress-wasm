@@ -1,8 +1,10 @@
 import type PHPServer from "./php-server";
+import type { PHPRequest, PHPResponse } from "./php-server";
 
 /**
  * A fake web browser that handles PHPServer's cookies and redirects
  * internally without exposing them to the consumer.
+ * @public
  */
 export default class PHPBrowser {
   #cookies;
@@ -11,8 +13,8 @@ export default class PHPBrowser {
   server: PHPServer;
 
   /**
-   * @param server The PHP server to browse.
-   * @param config The browser configuration. 
+   * @param server - The PHP server to browse.
+   * @param config - The browser configuration. 
    */
   constructor(server: PHPServer, config: PHPBrowserConfiguration = {}) {
     this.server = server;
@@ -34,11 +36,11 @@ export default class PHPBrowser {
    * follows it by discarding a response and sending a subsequent
    * request.
    * 
-   * @param {import('./php-server').Request} request The request.
-   * @param {number} redirects Optional. The number of redirects handled so far.
-   * @returns {import('./php-server').Response}
+   * @param request - The request.
+   * @param redirects - The number of redirects handled so far.
+   * @returns PHPServer response.
    */
-  async request(request, redirects = 0) {
+  async request(request: PHPRequest, redirects: number = 0): Promise<PHPResponse> {
     const response = await this.server.request({
       ...request,
       _COOKIE: this.#cookies,

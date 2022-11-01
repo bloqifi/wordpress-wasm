@@ -138,8 +138,8 @@ export async function initializeWorkerThread({
 
 /**
  * @typedef {Object} WorkerThreadConfiguration
- * @property {PHPBrowser} [phpBrowser] Optional. The PHP browser instance to use.
- * @property {BroadcastChannel} [broadcastChannel] Optional. The broadcast channel to use for communication
+ * @property {PHPBrowser} [phpBrowser] The PHP browser instance to use.
+ * @property {BroadcastChannel} [broadcastChannel] The broadcast channel to use for communication
  * 												   with the service worker.
  */
 
@@ -204,8 +204,8 @@ export const currentBackend = (function () {
  * 
  * @see startPHP
  * @param {Module} phpLoaderModule The ESM-wrapped Emscripten module. Consult the Dockerfile for the build process.
- * @param {Object} phpModuleArgs Optional. The Emscripten module arguments, see https://emscripten.org/docs/api_reference/module.html#affecting-execution.
- * @param {Module[]} dataDependenciesModules. Optional. A list of the ESM-wrapped Emscripten data dependency modules.
+ * @param {Object} phpModuleArgs The Emscripten module arguments, see https://emscripten.org/docs/api_reference/module.html#affecting-execution.
+ * @param {Module[]} dataDependenciesModules. A list of the ESM-wrapped Emscripten data dependency modules.
  * @returns {PHP} PHP instance. 
  */
  export async function loadPHPWithProgress(phpLoaderModule, dataDependenciesModules=[], phpArgs = {}) {
