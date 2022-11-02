@@ -219,7 +219,7 @@ session.save_path=/home/web_user
    * Runs a PHP script and outputs an object with three properties:
    * stdout, stderr, and the exitCode.
    * 
-   * * `exitCode` – the exit code of the script. 0 is success, while 1 and 2 indicate an error.
+   * * `exitCode` – the exit code of the script. `0` is a success, while `1` and `2` indicate an error.
    * * `stdout` – containing the output from `echo`, `print`, inline HTML etc.
    * * `stderr` – containing all the errors are logged. It can also be written
    *              to explicitly:
@@ -270,8 +270,8 @@ session.save_path=/home/web_user
 
   /**
    * Recursively creates a directory with the given path in the PHP filesystem.
-   * For example, if the path is "/root/php/data", and "/root" already exists,
-   * it will create the directories "/root/php" and "/root/php/data".
+   * For example, if the path is `/root/php/data`, and `/root` already exists,
+   * it will create the directories `/root/php` and `/root/php/data`.
    * 
    * @param path - The directory path to create.
    */
@@ -345,19 +345,19 @@ session.save_path=/home/web_user
    * with those $_FILES entries that are not in an internal hash table. This
    * is a security feature, see this exceprt from the `is_uploaded_file` documentation:
    * 
-   *    is_uploaded_file
-   * 
-   *    Returns true if the file named by filename was uploaded via HTTP POST. This is
-   *    useful to help ensure that a malicious user hasn't tried to trick the script into
-   *    working on files upon which it should not be working--for instance, /etc/passwd.
-   * 
-   *    This sort of check is especially important if there is any chance that anything
-   *    done with uploaded files could reveal their contents to the user, or even to other
-   *    users on the same system.
-   * 
-   *    For proper working, the function is_uploaded_file() needs an argument like
-   *    $_FILES['userfile']['tmp_name'], - the name of the uploaded file on the client's
-   *    machine $_FILES['userfile']['name'] does not work.
+   * > is_uploaded_file
+   * > 
+   * > Returns true if the file named by filename was uploaded via HTTP POST. This is
+   * > useful to help ensure that a malicious user hasn't tried to trick the script into
+   * > working on files upon which it should not be working--for instance, /etc/passwd.
+   * > 
+   * > This sort of check is especially important if there is any chance that anything
+   * > done with uploaded files could reveal their contents to the user, or even to other
+   * > users on the same system.
+   * > 
+   * > For proper working, the function is_uploaded_file() needs an argument like
+   * > $_FILES['userfile']['tmp_name'], - the name of the uploaded file on the client's
+   * > machine $_FILES['userfile']['name'] does not work.
    * 
    * This PHP.wasm implementation doesn't run any PHP request machinery, so PHP never has
    * a chance to note which files were actually uploaded. In practice, `is_uploaded_file()`
