@@ -63,7 +63,7 @@ interface WorkerThreadConfig {
 	onDownloadProgress?: (e: DownloadProgressEvent) => void;
 }
 
-class SpawnedWorkerThread {
+export class SpawnedWorkerThread {
 	messageChannel;
 	serverUrl;
 

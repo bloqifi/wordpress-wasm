@@ -72,11 +72,11 @@ export function getURLScope(url: URL): string | null {
  * @param  scope The scope value.
  * @returns A new URL with the scope information in it.
  */
-export function setURLScope(url: URL, scope: string): URL {
-	if (!scope) {
-		return url;
-	}
+export function setURLScope(url: URL | string, scope: string): URL {
 	const newUrl = new URL(url);
+	if (!scope) {
+		return newUrl;
+	}
 
 	if (isURLScoped(newUrl)) {
 		const parts = newUrl.pathname.split('/');

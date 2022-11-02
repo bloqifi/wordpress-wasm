@@ -14,6 +14,7 @@ import { DEFAULT_BASE_URL } from '../utils';
 import EmscriptenDownloadMonitor from '../emscripten-download-monitor';
 import type { DownloadProgressEvent } from '../emscripten-download-monitor';
 import { getURLScope } from '../scope';
+export * from '../scope';
 
 /**
  * Call this in a worker thread script to set the stage for
