@@ -10,6 +10,7 @@ module.exports = {
 		jsdoc: {
 			tagNamePreference: {
 				return: 'returns',
+				internal: 'internal',
 			},
 		},
 	},

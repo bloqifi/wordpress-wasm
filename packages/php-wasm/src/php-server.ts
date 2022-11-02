@@ -440,7 +440,7 @@ function parseResponse(result: PHPOutput): PHPResponse {
  * @param  rawHeaders - Raw HTTP header lines.
  * @returns Parsed headers.
  */
-function parseHeaders(rawHeaders: string[]): Headers {
+function parseHeaders(rawHeaders: string[]): PHPRequestHeaders {
 	const parsed = {};
 	for (const header of rawHeaders) {
 		const splitAt = header.indexOf(':');
@@ -525,7 +525,7 @@ export interface PHPServerConfigation {
 	isStaticFilePath?: (path: string) => boolean;
 }
 
-type Headers = Record<string, string>;
+type PHPRequestHeaders = Record<string, string>;
 
 export interface PHPRequest {
 	/**
@@ -543,7 +543,7 @@ export interface PHPRequest {
 	/**
 	 * Request headers.
 	 */
-	headers?: Headers;
+	headers?: PHPRequestHeaders;
 	/**
 	 * Request files in the `{"filename": File}` format.
 	 */
@@ -566,7 +566,7 @@ export interface PHPResponse {
 	/**
 	 * Response headers.
 	 */
-	headers: Headers;
+	headers: PHPRequestHeaders;
 	/**
 	 * Response HTTP status code, e.g. 200.
 	 */

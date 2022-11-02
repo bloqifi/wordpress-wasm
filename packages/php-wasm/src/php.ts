@@ -3,6 +3,9 @@ const NUM = 'number';
 
 type JavascriptRuntime = 'NODE' | 'WEB' | 'WEBWORKER';
 
+/**
+ * @internal
+ */
 interface Streams {
 	stdout: string[];
 	stderr: string[];
@@ -196,8 +199,8 @@ export class PHP {
 	/**
 	 * Initializes a PHP runtime.
 	 *
-	 * @param  Runtime    - PHP Runtime as initialized by startPHP.
-	 * @param  PHPRuntime
+	 * @internal
+	 * @param  PHPRuntime - PHP Runtime as initialized by startPHP.
 	 * @param  streams    - An object pointing to stdout and stderr streams, as initilized by startPHP.
 	 */
 	constructor(PHPRuntime: any, streams: Streams) {
@@ -269,7 +272,7 @@ session.save_path=/home/web_user
 	 * running PHP code, or else the next call to `run` will be contaminated
 	 * with the previous context.
 	 *
-	 * @private
+	 * @internal
 	 */
 	#refresh() {
 		this.#Runtime.ccall('phpwasm_refresh', NUM, [], []);
