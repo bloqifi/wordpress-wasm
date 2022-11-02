@@ -544,7 +544,7 @@ export interface PHPRequest {
 	 */
 	headers?: Headers;
 	/**
-	 * Request files in the {"filename": File} format.
+	 * Request files in the `{"filename": File}` format.
 	 */
 	files?: Record<string, File>;
 	/**
