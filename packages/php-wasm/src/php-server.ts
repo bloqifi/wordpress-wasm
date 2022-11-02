@@ -40,24 +40,22 @@ export default class PHPServer {
 	#PATHNAME: string;
 	#ABSOLUTE_URL: string;
 
+	/**
+	 * The PHP instance
+	 */
 	php: PHP;
 	#isStaticFilePath: (path: string) => boolean;
 
 	/**
-	 * @param  php                     - PHP instance.
-	 * @param  config                  - Server configuration.
-	 * @param  config.documentRoot
-	 * @param  config.absoluteUrl
-	 * @param  config.isStaticFilePath
+	 * @param  php    - The PHP instance.
+	 * @param  config - Server configuration.
 	 */
-	constructor(
-		php: PHP,
-		{
+	constructor(php: PHP, config: PHPServerConfigation) {
+		const {
 			documentRoot = '/var/www/',
 			absoluteUrl,
 			isStaticFilePath = () => false,
-		}: PHPServerConfigation
-	) {
+		} = config;
 		this.php = php;
 		this.#DOCROOT = documentRoot;
 		this.#isStaticFilePath = isStaticFilePath;
@@ -83,6 +81,9 @@ export default class PHPServer {
 		].join('');
 	}
 
+	/**
+	 * The absolute URL of this PHPServer instance.
+	 */
 	get absoluteUrl() {
 		return this.#ABSOLUTE_URL;
 	}
