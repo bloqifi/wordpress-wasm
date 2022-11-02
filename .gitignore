@@ -13,3 +13,5 @@ build/*
 !build/wp.js
 packages/*/build*
 packages/*/build*/*
+tsconfig.tsbuildinfo
+
