@@ -36,6 +36,7 @@
   "author": "The WordPress contributors",
   "license": "Apache-2.0",
   "dependencies": {
+    "@microsoft/tsdoc": "^0.14.2",
     "glob": "^8.0.3",
     "php-wasm": "file:packages/php-wasm",
     "php-wasm-browser": "file:packages/php-wasm-browser",
