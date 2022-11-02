@@ -1,3 +1,4 @@
+import type { PHPOutput, PHPRequest, PHPResponse } from 'php-wasm';
 import { postMessageExpectReply, awaitReply } from '../messaging';
 import { removeURLScope } from '../scope';
 import { getPathQueryFragment } from '..';
@@ -6,11 +7,12 @@ import type { DownloadProgressEvent } from '../';
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const noop = () => {};
 
-/**
- * @typedef {Object} WorkerThreadConfig
- * @property {Function} onDownloadProgress A function to call when a download
- *                                         progress event is received from the worker
- */
+interface WorkerThreadConfig {
+	/**
+	 * A function to call when a download progress event is received from the worker
+	 */
+	onDownloadProgress?: (event: DownloadProgressEvent) => void;
+}
 
 /**
  * Spawns a new Worker Thread.
@@ -76,10 +78,10 @@ export class SpawnedWorkerThread {
 	 * Converts a path to an absolute URL based at the PHPServer
 	 * root.
 	 *
-	 * @param {string} path The server path to convert to an absolute URL.
-	 * @returns {string} The absolute URL.
+	 * @param  path The server path to convert to an absolute URL.
+	 * @returns The absolute URL.
 	 */
-	pathToInternalUrl(path) {
+	pathToInternalUrl(path: string): string {
 		return `${this.serverUrl}${path}`;
 	}
 
@@ -87,20 +89,20 @@ export class SpawnedWorkerThread {
 	 * Converts an absolute URL based at the PHPServer to a relative path
 	 * without the server pathname and scope.
 	 *
-	 * @param {string} internalUrl An absolute URL based at the PHPServer root.
-	 * @returns {string} The relative path.
+	 * @param  internalUrl An absolute URL based at the PHPServer root.
+	 * @returns The relative path.
 	 */
-	internalUrlToPath(internalUrl) {
+	internalUrlToPath(internalUrl: string): string {
 		return getPathQueryFragment(removeURLScope(new URL(internalUrl)));
 	}
 
 	/**
 	 * Runs PHP code.
 	 *
-	 * @param {string} code The PHP code to run.
-	 * @returns {Promise<Output>} The result of the PHP code.
+	 * @param  code The PHP code to run.
+	 * @returns The result of the PHP code.
 	 */
-	async eval(code) {
+	async eval(code: string): Promise<PHPOutput> {
 		return await this.messageChannel.sendMessage({
 			type: 'run_php',
 			code,
@@ -110,10 +112,10 @@ export class SpawnedWorkerThread {
 	/**
 	 * Dispatches a request to the PHPServer.
 	 *
-	 * @param {Request} request The request to dispatch.
-	 * @returns {Promise<Response>} The response from the PHPServer.
+	 * @param  request – The request to dispatch.
+	 * @returns  The response from the PHPServer.
 	 */
-	async HTTPRequest(request) {
+	async HTTPRequest(request: PHPRequest): Promise<PHPResponse> {
 		return await this.messageChannel.sendMessage({
 			type: 'request',
 			request,
@@ -121,17 +123,7 @@ export class SpawnedWorkerThread {
 	}
 }
 
-/**
- * @typedef {import('php-wasm/src/php').Output} Output
- */
-/**
- * @typedef {import('php-wasm/src/php-server').Request} Request
- */
-/**
- * @typedef {import('php-wasm/src/php-server').Response} Response
- */
-
-function spawnWebWorker(workerURL) {
+function spawnWebWorker(workerURL: string) {
 	const worker = new Worker(workerURL);
 	return {
 		async sendMessage(message, timeout) {
@@ -145,7 +137,7 @@ function spawnWebWorker(workerURL) {
 	};
 }
 
-function spawnIframeWorker(workerDocumentURL) {
+function spawnIframeWorker(workerDocumentURL: string) {
 	const iframe = document.createElement('iframe');
 	iframe.src = workerDocumentURL;
 	iframe.style.display = 'none';

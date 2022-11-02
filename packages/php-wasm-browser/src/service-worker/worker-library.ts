@@ -151,10 +151,10 @@ interface ServiceWorkerConfiguration {
  * seemsLikeAPHPServerPath('/') // true
  * ```
  *
- * @param {string} path The path to check.
- * @returns {boolean} Whether the path seems like a PHP server path.
+ * @param  path The path to check.
+ * @returns Whether the path seems like a PHP server path.
  */
-export function seemsLikeAPHPServerPath(path) {
+export function seemsLikeAPHPServerPath(path: string): boolean {
 	return seemsLikeAPHPFile(path) || seemsLikeADirectoryRoot(path);
 }
 
@@ -202,11 +202,14 @@ async function parsePost(request) {
  *
  * https://developer.mozilla.org/en-US/docs/Web/API/Request
  *
- * @param {Request} request
- * @param {Object}  overrides
- * @return {Request} The new request.
+ * @param  request
+ * @param  overrides
+ * @return The new request.
  */
-async function cloneRequest(request, overrides) {
+async function cloneRequest(
+	request: Request,
+	overrides: Record<string, any>
+): Promise<Request> {
 	const body =
 		['GET', 'HEAD'].includes(request.method) || 'body' in overrides
 			? undefined
