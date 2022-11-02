@@ -294,7 +294,7 @@ session.save_path=/home/web_user
 	/**
 	 * Reads a file from the PHP filesystem and returns it as a string.
 	 *
-	 * @throws {ErrnoError} If the file doesn't exist.
+	 * @throws {@link ErrnoError} – If the file doesn't exist.
 	 * @param  path - The file path to read.
 	 * @returns The file contents.
 	 */
@@ -305,7 +305,7 @@ session.save_path=/home/web_user
 	/**
 	 * Reads a file from the PHP filesystem and returns it as an array buffer.
 	 *
-	 * @throws {ErrnoError} If the file doesn't exist.
+	 * @throws {@link ErrnoError} – If the file doesn't exist.
 	 * @param  path - The file path to read.
 	 * @returns The file contents.
 	 */
@@ -327,7 +327,7 @@ session.save_path=/home/web_user
 	/**
 	 * Removes a file from the PHP filesystem.
 	 *
-	 * @throws {ErrnoError} If the file doesn't exist.
+	 * @throws {@link ErrnoError} – If the file doesn't exist.
 	 * @param  path - The file path to remove.
 	 */
 	unlink(path: string) {
