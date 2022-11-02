@@ -9,9 +9,12 @@
 	"references": [
         { "path": "../php-wasm" }
     ],
-	"include": [ "src/**/*" ],
-	"exclude": [
+	"include": [
 		 "src/service-worker/worker-library.ts",
-		 "src/worker-thread/worker-library.ts"
+		 "src/worker-thread/worker-library.ts",
+		 "src/emscripten-download-monitor.ts",
+		 "src/messaging.ts",
+		 "src/scope.ts",
+		 "src/utils.ts"
  	]
 }

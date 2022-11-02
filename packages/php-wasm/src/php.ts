@@ -1,7 +1,7 @@
 const STR = 'string';
 const NUM = 'number';
 
-type JavascriptRuntime = 'NODE' | 'WEB' | 'WEBWORKER';
+export type JavascriptRuntime = 'NODE' | 'WEB' | 'WEBWORKER';
 
 /**
  * @internal

@@ -1,5 +1,5 @@
 export { PHP, startPHP } from './php';
-export type { ErrnoError } from './php';
+export type { JavascriptRuntime, ErrnoError } from './php';
 
 import PHPServer from './php-server';
 export { PHPServer };

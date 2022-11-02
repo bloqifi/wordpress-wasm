@@ -1,6 +1,7 @@
-import { postMessageExpectReply, awaitReply } from './messaging';
-import { setURLScope, removeURLScope } from './scope';
-import { getPathQueryFragment } from './';
+import { postMessageExpectReply, awaitReply } from '../messaging';
+import { removeURLScope } from '../scope';
+import { getPathQueryFragment } from '..';
+import type { DownloadProgressEvent } from '../';
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const noop = () => {};
@@ -8,20 +9,23 @@ const noop = () => {};
 /**
  * @typedef {Object} WorkerThreadConfig
  * @property {Function} onDownloadProgress A function to call when a download
- * 									       progress event is received from the worker
+ *                                         progress event is received from the worker
  */
 
 /**
  * Spawns a new Worker Thread.
- * 
- * @property {string} backendName The Worker Thread backend to use. Either 'webworker' or 'iframe'.
- * @property {string} workerScriptUrl The absolute URL of the worker script.
- * @param {WorkerThreadConfig} config 
- * @returns {SpawnedWorkerThread} The spawned Worker Thread.
+ *
+ * @param  backendName     The Worker Thread backend to use. Either 'webworker' or 'iframe'.
+ * @param  workerScriptUrl The absolute URL of the worker script.
+ * @param  config
+ * @returns  The spawned Worker Thread.
  */
-export async function spawnPHPWorkerThread(backendName, workerScriptUrl, {
-	onDownloadProgress = noop,
-}) {
+export async function spawnPHPWorkerThread(
+	backendName: string,
+	workerScriptUrl: string,
+	config: WorkerThreadConfig
+): Promise<SpawnedWorkerThread> {
+	const { onDownloadProgress = noop } = config;
 	let messageChannel;
 	if (backendName === 'webworker') {
 		messageChannel = spawnWebWorker(workerScriptUrl);
@@ -30,7 +34,7 @@ export async function spawnPHPWorkerThread(backendName, workerScriptUrl, {
 	} else {
 		throw new Error(`Unknown backendName: ${backendName}`);
 	}
-	
+
 	messageChannel.setMessageListener((e) => {
 		if (e.data.type === 'download_progress') {
 			onDownloadProgress(e.data);
@@ -49,13 +53,19 @@ export async function spawnPHPWorkerThread(backendName, workerScriptUrl, {
 	}
 
 	const absoluteUrl = await messageChannel.sendMessage({
-		type: 'get_absolute_url'
+		type: 'get_absolute_url',
 	});
 
 	return new SpawnedWorkerThread(messageChannel, absoluteUrl);
 }
 
+interface WorkerThreadConfig {
+	onDownloadProgress?: (e: DownloadProgressEvent) => void;
+}
+
 class SpawnedWorkerThread {
+	messageChannel;
+	serverUrl;
 
 	constructor(messageChannel, serverUrl) {
 		this.messageChannel = messageChannel;
@@ -65,7 +75,7 @@ class SpawnedWorkerThread {
 	/**
 	 * Converts a path to an absolute URL based at the PHPServer
 	 * root.
-	 * 
+	 *
 	 * @param {string} path The server path to convert to an absolute URL.
 	 * @returns {string} The absolute URL.
 	 */
@@ -76,7 +86,7 @@ class SpawnedWorkerThread {
 	/**
 	 * Converts an absolute URL based at the PHPServer to a relative path
 	 * without the server pathname and scope.
-	 * 
+	 *
 	 * @param {string} internalUrl An absolute URL based at the PHPServer root.
 	 * @returns {string} The relative path.
 	 */
@@ -86,7 +96,7 @@ class SpawnedWorkerThread {
 
 	/**
 	 * Runs PHP code.
-	 * 
+	 *
 	 * @param {string} code The PHP code to run.
 	 * @returns {Promise<Output>} The result of the PHP code.
 	 */
@@ -99,7 +109,7 @@ class SpawnedWorkerThread {
 
 	/**
 	 * Dispatches a request to the PHPServer.
-	 * 
+	 *
 	 * @param {Request} request The request to dispatch.
 	 * @returns {Promise<Response>} The response from the PHPServer.
 	 */
@@ -143,7 +153,7 @@ function spawnIframeWorker(workerDocumentURL) {
 	return {
 		async sendMessage(message, timeout) {
 			const requestId = postMessageExpectReply(
-				iframe.contentWindow,
+				iframe.contentWindow!,
 				message,
 				'*'
 			);

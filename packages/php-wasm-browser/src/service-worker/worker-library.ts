@@ -1,20 +1,26 @@
-import { postMessageExpectReply, awaitReply, responseTo } from './messaging.js';
-import { getURLScope, isURLScoped, removeURLScope } from './scope';
-import { getPathQueryFragment } from './';
+/// <reference no-default-lib="true"/>
+/// <reference lib="esnext" />
+/// <reference lib="WebWorker" />
+
+declare const self: ServiceWorkerGlobalScope;
+
+import { postMessageExpectReply, awaitReply } from '../messaging';
+import { getURLScope, isURLScoped, removeURLScope } from '../scope';
+import { getPathQueryFragment } from '../utils';
 
 /**
  * Run this function in the service worker to install the required event
  * handlers.
- * 
- * @param {Object} config
+ *
+ * @param  config
  */
-export function initializeServiceWorker({
-	broadcastChannel,
-	shouldForwardRequestToPHPServer=(request, unscopedUrl)=>seemsLikeAPHPServerPath(unscopedUrl.pathname)
-}) {
-	if (!broadcastChannel) {
-		broadcastChannel = new BroadcastChannel('php-wasm-browser');
-	}
+export function initializeServiceWorker(config: ServiceWorkerConfiguration) {
+	const {
+		shouldForwardRequestToPHPServer = (request, unscopedUrl) =>
+			seemsLikeAPHPServerPath(unscopedUrl.pathname),
+	} = config;
+	const broadcastChannel =
+		config.broadcastChannel || new BroadcastChannel('php-wasm-browser');
 
 	/**
 	 * Ensure the client gets claimed by this service worker right after the registration.
@@ -29,11 +35,11 @@ export function initializeServiceWorker({
 	 */
 	self.addEventListener('activate', (event) => {
 		// eslint-disable-next-line no-undef
-		event.waitUntil(clients.claim());
+		event.waitUntil(self.clients.claim());
 	});
 
 	/**
-	 * The main method. It captures the requests and loop them back to the 
+	 * The main method. It captures the requests and loop them back to the
 	 * Worker Thread using the Loopback request
 	 */
 	self.addEventListener('fetch', (event) => {
@@ -69,7 +75,7 @@ export function initializeServiceWorker({
 
 				const { post, files } = await parsePost(event.request);
 				const requestHeaders = {};
-				for (const pair of event.request.headers.entries()) {
+				for (const pair of (event.request.headers as any).entries()) {
 					requestHeaders[pair[0]] = pair[1];
 				}
 
@@ -116,7 +122,7 @@ export function initializeServiceWorker({
 				accept(
 					new Response(phpResponse.body, {
 						headers: phpResponse.headers,
-						status: phpResponse.statusCode
+						status: phpResponse.statusCode,
 					})
 				);
 			})
@@ -124,9 +130,17 @@ export function initializeServiceWorker({
 	});
 }
 
+interface ServiceWorkerConfiguration {
+	broadcastChannel?: BroadcastChannel;
+	shouldForwardRequestToPHPServer?: (
+		request: Request,
+		unscopedUrl: URL
+	) => boolean;
+}
+
 /**
  * Guesses whether the given path looks like a PHP file.
- * 
+ *
  * @example
  * ```js
  * seemsLikeAPHPServerPath('/index.php') // true
@@ -136,15 +150,12 @@ export function initializeServiceWorker({
  * seemsLikeAPHPServerPath('/index.html/foo/bar') // false
  * seemsLikeAPHPServerPath('/') // true
  * ```
- * 
+ *
  * @param {string} path The path to check.
  * @returns {boolean} Whether the path seems like a PHP server path.
  */
 export function seemsLikeAPHPServerPath(path) {
-	return (
-		seemsLikeAPHPFile(path) ||
-		seemsLikeADirectoryRoot(path)
-	);
+	return seemsLikeAPHPFile(path) || seemsLikeADirectoryRoot(path);
 }
 
 function seemsLikeAPHPFile(path) {
@@ -152,8 +163,8 @@ function seemsLikeAPHPFile(path) {
 }
 
 function seemsLikeADirectoryRoot(path) {
-	const lastSegment = path.split("/").pop();
-	return !lastSegment.includes(".");
+	const lastSegment = path.split('/').pop();
+	return !lastSegment.includes('.');
 }
 
 async function parsePost(request) {
@@ -195,7 +206,7 @@ async function parsePost(request) {
  * @param {Object}  overrides
  * @return {Request} The new request.
  */
- async function cloneRequest(request, overrides) {
+async function cloneRequest(request, overrides) {
 	const body =
 		['GET', 'HEAD'].includes(request.method) || 'body' in overrides
 			? undefined
@@ -214,18 +225,3 @@ async function parsePost(request) {
 		...overrides,
 	});
 }
-
-/**
- * Run this in the main application to register the service worker.
- * 
- * @param {string} scriptUrl The URL of the service worker script.
- */
- export async function registerServiceWorker( scriptUrl ) {
-	if (!navigator.serviceWorker) {
-		throw new Error('Service workers are not supported in this browser.');
-	}
-
-	const registration = await navigator.serviceWorker.register(scriptUrl);
-	await registration.update();
-	navigator.serviceWorker.startMessages();
- }
