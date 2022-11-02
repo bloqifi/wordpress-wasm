@@ -1,14 +1,3 @@
-// for i in $(ls packages/*/tsconfig*.json); do npx tsc -p $i; done;
-// for i in $(ls packages/*/api-extractor*.json); do node ./api-tools/api-extractor.js run -c $i --local --verbose; done;
-
-/*
-rm temp/*; \
-node ./api-tools/merge-extracted-apis.js ./packages/php-wasm-browser/build-api/*.json > temp/php-wasm-browser.api.json; \
-node ./api-tools/merge-extracted-apis.js ./packages/wordpress-wasm/build-api/*.json > temp/wordpress-wasm.api.json; \
-cp ./packages/php-wasm/build-api/api.json ./temp/php-wasm.api.json; \
-node api-tools/api-documenter.js markdown -i temp -o temp-mdq
-*/
-
 const fs = require('fs');
 
 // Iterate over the JSON files in the directory passed via the first argument

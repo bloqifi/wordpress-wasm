@@ -1,3 +1,5 @@
+const { DocNode } = require('@microsoft/tsdoc');
+
 const {
 	DocNodeKind,
 	DocPlainText,
@@ -20,6 +22,7 @@ const {
  * @param {DocParagraph} docParagraph - a DocParagraph containing nodes to be transformed
  * @return {DocParagraph} The transformed child nodes.
  */
+
 DocNodeTransforms.trimSpacesInParagraph = function (docParagraph) {
 	const transformedNodes = [];
 	// Whether the next nonempty node to be added needs a space before it
@@ -132,6 +135,13 @@ DocNodeTransforms.trimSpacesInParagraph = function (docParagraph) {
 };
 
 const originalRenderNode = TSDocEmitter.prototype._renderNode;
+
+/**
+ * Preserve newlines plain text nodes.
+ * By default, tsdoc replaces them with spaces.
+ *
+ * @param {DocNode} docNode
+ */
 TSDocEmitter.prototype._renderNode = function (docNode) {
 	if (docNode === undefined) {
 		return;
