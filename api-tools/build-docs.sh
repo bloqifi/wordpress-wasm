@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Run from the repo root
-
 npx tsc -p packages/php-wasm/tsconfig.json;
 npx tsc -p packages/php-wasm-browser/tsconfig.json;
 npx tsc -p packages/php-wasm-browser/tsconfig.worker.json;
@@ -16,7 +15,7 @@ done;
 # cd ../api-documenter && npm run build && cd ../wasm
 
 rm temp/*; 
+node ./api-tools/merge-extracted-apis.js ./packages/php-wasm/build-api/*.json > temp/php-wasm.api.json; 
 node ./api-tools/merge-extracted-apis.js ./packages/php-wasm-browser/build-api/*.json > temp/php-wasm-browser.api.json; 
 node ./api-tools/merge-extracted-apis.js ./packages/wordpress-wasm/build-api/*.json > temp/wordpress-wasm.api.json; 
-cp ./packages/php-wasm/build-api/php-wasm.api.json ./temp/ 
 node api-tools/api-documenter.js markdown -i temp -o temp-mdq
