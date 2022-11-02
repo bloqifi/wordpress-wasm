@@ -123,7 +123,7 @@ interface Streams {
  * @param  runtime                 - The current JavaScript environment. One of: NODE, WEB, or WEBWORKER.
  * @param  phpModuleArgs           - The Emscripten module arguments, see https://emscripten.org/docs/api_reference/module.html#affecting-execution.
  * @param  dataDependenciesModules - A list of the ESM-wrapped Emscripten data dependency modules.
- * @return PHP instance.
+ * @returns PHP instance.
  */
 export async function startPHP(
 	phpLoaderModule: any,
@@ -244,7 +244,7 @@ session.save_path=/home/web_user
 	 * ```
 	 *
 	 * @param  code - The PHP code to run.
-	 * @return The PHP process output.
+	 * @returns The PHP process output.
 	 */
 	run(code: string): PHPOutput {
 		const exitCode = this.#Runtime.ccall(
@@ -293,7 +293,7 @@ session.save_path=/home/web_user
 	 *
 	 * @throws {ErrnoError} If the file doesn't exist.
 	 * @param  path - The file path to read.
-	 * @return The file contents.
+	 * @returns The file contents.
 	 */
 	readFileAsText(path: string): string {
 		return new TextDecoder().decode(this.readFileAsBuffer(path));
@@ -304,7 +304,7 @@ session.save_path=/home/web_user
 	 *
 	 * @throws {ErrnoError} If the file doesn't exist.
 	 * @param  path - The file path to read.
-	 * @return The file contents.
+	 * @returns The file contents.
 	 */
 	readFileAsBuffer(path: string): Uint8Array {
 		return this.#Runtime.FS.readFile(path);
@@ -335,7 +335,7 @@ session.save_path=/home/web_user
 	 * Checks if a file (or a directory) exists in the PHP filesystem.
 	 *
 	 * @param  path - The file path to check.
-	 * @return True if the file exists, false otherwise.
+	 * @returns True if the file exists, false otherwise.
 	 */
 	fileExists(path: string): boolean {
 		try {

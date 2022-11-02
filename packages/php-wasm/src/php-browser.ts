@@ -39,7 +39,7 @@ export default class PHPBrowser {
 	 *
 	 * @param  request   - The request.
 	 * @param  redirects - Internal. The number of redirects handled so far.
-	 * @return PHPServer response.
+	 * @returns PHPServer response.
 	 */
 	async request(
 		request: PHPRequest,

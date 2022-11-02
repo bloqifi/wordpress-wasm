@@ -92,7 +92,7 @@ export default class PHPServer {
 	 * dispatching it to the PHP runtime.
 	 *
 	 * @param  request - The request.
-	 * @return The response.
+	 * @returns The response.
 	 */
 	async request(request: PHPRequest): Promise<PHPResponse> {
 		const serverPath = this.#withoutServerPathname(request.path);
@@ -106,7 +106,7 @@ export default class PHPServer {
 	 * Serves a static file from the PHP filesystem.
 	 *
 	 * @param  path - The requested static file path.
-	 * @return The response.
+	 * @returns The response.
 	 */
 	#serveStaticFile(path: string): PHPResponse {
 		const fsPath = `${this.#DOCROOT}${path}`;
@@ -144,7 +144,7 @@ export default class PHPServer {
 	 *
 	 * @see #prepare_FILES for details on how JavaScript `files` are converted to $_FILES.
 	 * @param  request - The request.
-	 * @return The response.
+	 * @returns The response.
 	 */
 	async #dispatchToPHP(request: PHPRequest): Promise<PHPResponse> {
 		const _FILES = await this.#prepare_FILES(request.files);
@@ -256,7 +256,7 @@ REQUEST,
 	 * Fall back to index.php as if there was a url rewriting rule in place.
 	 *
 	 * @param  requestedPath - The requested pathname.
-	 * @return The resolved filesystem path.
+	 * @returns The resolved filesystem path.
 	 */
 	#resolvePHPFilePath(requestedPath: string): string {
 		let filePath = this.#withoutServerPathname(requestedPath);
@@ -301,7 +301,7 @@ REQUEST,
 	 * of `/subdirectory/index.php` which is likely undesirable.
 	 *
 	 * @param  requestedPath - The requested path.
-	 * @return A path with the server prefix removed.
+	 * @returns A path with the server prefix removed.
 	 */
 	#withoutServerPathname(requestedPath: string): string {
 		if (!this.#PATHNAME) {
@@ -332,7 +332,7 @@ REQUEST,
 	 * )
 	 *
 	 * @param  files - JavaScript files keyed by their HTTP upload name.
-	 * @return $_FILES-compatible object.
+	 * @returns $_FILES-compatible object.
 	 */
 	async #prepare_FILES(files: Record<string, File> = {}): Promise<_FILES> {
 		if (Object.keys(files).length) {
@@ -386,7 +386,7 @@ REQUEST,
  * the headers and status code are sourced from stderr.
  *
  * @param  result - Raw output of PHP.run().
- * @return Parsed response
+ * @returns Parsed response
  */
 function parseResponse(result: PHPOutput): PHPResponse {
 	const response = {
@@ -437,7 +437,7 @@ function parseResponse(result: PHPOutput): PHPResponse {
  * ```
  *
  * @param  rawHeaders - Raw HTTP header lines.
- * @return Parsed headers.
+ * @returns Parsed headers.
  */
 function parseHeaders(rawHeaders: string[]): Headers {
 	const parsed = {};
@@ -463,7 +463,7 @@ function parseHeaders(rawHeaders: string[]): Headers {
  *       and potentially have negative security consequences.
  *
  * @param  path - The file path
- * @return The inferred mime type.
+ * @returns The inferred mime type.
  */
 function inferMimeType(path: string): string {
 	const extension = path.split('.').pop();
