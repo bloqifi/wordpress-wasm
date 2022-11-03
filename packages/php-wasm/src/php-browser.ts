@@ -7,7 +7,7 @@ import type { PHPRequest, PHPResponse } from './php-server';
  *
  * @public
  */
-export default class PHPBrowser {
+export class PHPBrowser {
 	#cookies;
 	#config;
 
@@ -101,3 +101,5 @@ interface PHPBrowserConfiguration {
 	 */
 	maxRedirects?: number;
 }
+
+export default PHPBrowser;

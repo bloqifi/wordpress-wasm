@@ -8,7 +8,7 @@ initializeServiceWorker({
 	shouldForwardRequestToPHPServer,
 });
 
-function shouldForwardRequestToPHPServer(request, unscopedUrl) {
+function shouldForwardRequestToPHPServer(request, unscopedUrl: URL) {
 	const path = unscopedUrl.pathname;
 	return (
 		!path.startsWith('/plugin-proxy') &&

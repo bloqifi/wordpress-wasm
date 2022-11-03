@@ -122,7 +122,7 @@ export function responseTo<T>(
 	};
 }
 
-interface MessageResponse<T> {
+export interface MessageResponse<T> {
 	type: 'response';
 	requestId: number;
 	response: T;
@@ -130,9 +130,4 @@ interface MessageResponse<T> {
 
 interface PostMessageTarget {
 	postMessage(message: any, ...args: any[]): void;
-}
-
-interface EventTarget {
-	addEventListener(message: string, ...args);
-	removeEventListener(message: string, ...args);
 }

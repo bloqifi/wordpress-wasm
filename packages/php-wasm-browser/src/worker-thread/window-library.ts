@@ -1,8 +1,12 @@
 import type { PHPOutput, PHPRequest, PHPResponse } from 'php-wasm';
-import { postMessageExpectReply, awaitReply } from '../messaging';
+import {
+	postMessageExpectReply,
+	awaitReply,
+	MessageResponse,
+} from '../messaging';
 import { removeURLScope } from '../scope';
 import { getPathQueryFragment } from '..';
-import type { DownloadProgressEvent } from '../';
+import type { DownloadProgressEvent } from '../emscripten-download-monitor';
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const noop = () => {};
@@ -28,7 +32,7 @@ export async function spawnPHPWorkerThread(
 	config: WorkerThreadConfig
 ): Promise<SpawnedWorkerThread> {
 	const { onDownloadProgress = noop } = config;
-	let messageChannel;
+	let messageChannel: WorkerThreadMessageTarget;
 	if (backendName === 'webworker') {
 		messageChannel = spawnWebWorker(workerScriptUrl);
 	} else if (backendName === 'iframe') {
@@ -59,10 +63,6 @@ export async function spawnPHPWorkerThread(
 	});
 
 	return new SpawnedWorkerThread(messageChannel, absoluteUrl);
-}
-
-interface WorkerThreadConfig {
-	onDownloadProgress?: (e: DownloadProgressEvent) => void;
 }
 
 export class SpawnedWorkerThread {
@@ -112,7 +112,7 @@ export class SpawnedWorkerThread {
 	/**
 	 * Dispatches a request to the PHPServer.
 	 *
-	 * @param  request – The request to dispatch.
+	 * @param  request The request to dispatch.
 	 * @returns  The response from the PHPServer.
 	 */
 	async HTTPRequest(request: PHPRequest): Promise<PHPResponse> {
@@ -123,10 +123,15 @@ export class SpawnedWorkerThread {
 	}
 }
 
-function spawnWebWorker(workerURL: string) {
+interface WorkerThreadMessageTarget {
+	sendMessage(message: any, timeout?: number): Promise<MessageResponse<any>>;
+	setMessageListener(listener: (message: any) => void): void;
+}
+
+function spawnWebWorker(workerURL: string): WorkerThreadMessageTarget {
 	const worker = new Worker(workerURL);
 	return {
-		async sendMessage(message, timeout) {
+		async sendMessage(message: any, timeout: number) {
 			const requestId = postMessageExpectReply(worker, message);
 			const response = await awaitReply(worker, requestId, timeout);
 			return response;
@@ -137,7 +142,9 @@ function spawnWebWorker(workerURL: string) {
 	};
 }
 
-function spawnIframeWorker(workerDocumentURL: string) {
+function spawnIframeWorker(
+	workerDocumentURL: string
+): WorkerThreadMessageTarget {
 	const iframe = document.createElement('iframe');
 	iframe.src = workerDocumentURL;
 	iframe.style.display = 'none';

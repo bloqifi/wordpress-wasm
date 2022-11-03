@@ -60,11 +60,11 @@ export * from '../scope';
  * ```
  *
  * @param  config The worker thread configuration.
- * @return {Object} The backend object to communicate with the parent thread.
+ * @return The backend object to communicate with the parent thread.
  */
 export async function initializeWorkerThread(
 	config: WorkerThreadConfiguration
-) {
+): Promise<any> {
 	const phpBrowser = config.phpBrowser || (await defaultBootBrowser());
 	const broadcastChannel =
 		config.broadcastChannel || new BroadcastChannel('php-wasm-browser');
@@ -160,7 +160,13 @@ async function defaultBootBrowser({ absoluteUrl = location.origin } = {}) {
 	);
 }
 
-const webBackend = {
+interface WorkerThreadBackend {
+	jsEnv: JavascriptRuntime;
+	setMessageListener(handler: any);
+	postMessageToParent(message: any);
+}
+
+const webBackend: WorkerThreadBackend = {
 	jsEnv: 'WEB' as JavascriptRuntime, // Matches the Env argument in php.js
 	setMessageListener(handler) {
 		window.addEventListener(
@@ -177,7 +183,7 @@ const webBackend = {
 	},
 };
 
-const webWorkerBackend = {
+const webWorkerBackend: WorkerThreadBackend = {
 	jsEnv: 'WORKER' as JavascriptRuntime, // Matches the Env argument in php.js
 	setMessageListener(handler) {
 		onmessage = (event) => {
@@ -192,7 +198,7 @@ const webWorkerBackend = {
 /**
  * @returns
  */
-export const currentBackend = (function () {
+export const currentBackend: WorkerThreadBackend = (function () {
 	/* eslint-disable no-undef */
 	if (typeof window !== 'undefined') {
 		return webBackend;

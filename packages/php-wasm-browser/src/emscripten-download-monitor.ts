@@ -145,7 +145,7 @@ export interface DownloadProgressEvent {
  */
 export function cloneResponseMonitorProgress(
 	response: Response,
-	onProgress: (DownloadProgressEvent) => void
+	onProgress: DownloadProgressCallback
 ): Response {
 	const contentLength = response.headers.get('content-length') || '';
 	const total = parseInt(contentLength, 10) || FALLBACK_FILE_SIZE;
@@ -166,11 +166,11 @@ export function cloneResponseMonitorProgress(
 							loaded += value.byteLength;
 						}
 						if (done) {
-							onProgress({ loaded, total: loaded, done });
+							onProgress({ loaded, total: loaded });
 							controller.close();
 							break;
 						} else {
-							onProgress({ loaded, total, done });
+							onProgress({ loaded, total });
 							controller.enqueue(value);
 						}
 					} catch (e) {
@@ -188,3 +188,5 @@ export function cloneResponseMonitorProgress(
 		}
 	);
 }
+
+export type DownloadProgressCallback = (event: DownloadProgressEvent) => void;

@@ -16,8 +16,10 @@ import { getPathQueryFragment } from '../utils';
  */
 export function initializeServiceWorker(config: ServiceWorkerConfiguration) {
 	const {
-		shouldForwardRequestToPHPServer = (request, unscopedUrl) =>
-			seemsLikeAPHPServerPath(unscopedUrl.pathname),
+		shouldForwardRequestToPHPServer = (
+			request: Request,
+			unscopedUrl: URL
+		) => seemsLikeAPHPServerPath(unscopedUrl.pathname),
 	} = config;
 	const broadcastChannel =
 		config.broadcastChannel || new BroadcastChannel('php-wasm-browser');
@@ -204,7 +206,7 @@ async function parsePost(request) {
  *
  * @param  request
  * @param  overrides
- * @return The new request.
+ * @returns The new request.
  */
 async function cloneRequest(
 	request: Request,

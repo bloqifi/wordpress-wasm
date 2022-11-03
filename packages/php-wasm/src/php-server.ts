@@ -31,7 +31,7 @@ import type { PHP, PHPOutput } from './php';
  * // Output: "Hi from PHP!"
  * ```
  */
-export default class PHPServer {
+export class PHPServer {
 	#DOCROOT: string;
 	#PROTOCOL: string;
 	#HOSTNAME: string;
@@ -590,3 +590,5 @@ interface _FILE {
 	error: number;
 	size: number;
 }
+
+export default PHPServer;
