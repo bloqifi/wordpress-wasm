@@ -112,7 +112,7 @@ export class SpawnedWorkerThread {
 	/**
 	 * Dispatches a request to the PHPServer.
 	 *
-	 * @param  request The request to dispatch.
+	 * @param  request - The request to dispatch.
 	 * @returns  The response from the PHPServer.
 	 */
 	async HTTPRequest(request: PHPRequest): Promise<PHPResponse> {
