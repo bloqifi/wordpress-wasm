@@ -6,17 +6,9 @@ import {
 } from '../messaging';
 import { removeURLScope } from '../scope';
 import { getPathQueryFragment } from '..';
-import type { DownloadProgressEvent } from '../emscripten-download-monitor';
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const noop = () => {};
-
-interface WorkerThreadConfig {
-	/**
-	 * A function to call when a download progress event is received from the worker
-	 */
-	onDownloadProgress?: (event: DownloadProgressEvent) => void;
-}
 
 /**
  * Spawns a new Worker Thread.
@@ -29,9 +21,7 @@ interface WorkerThreadConfig {
 export async function spawnPHPWorkerThread(
 	backendName: string,
 	workerScriptUrl: string,
-	config: WorkerThreadConfig
 ): Promise<SpawnedWorkerThread> {
-	const { onDownloadProgress = noop } = config;
 	let messageChannel: WorkerThreadMessageTarget;
 	if (backendName === 'webworker') {
 		messageChannel = spawnWebWorker(workerScriptUrl);
@@ -42,9 +32,7 @@ export async function spawnPHPWorkerThread(
 	}
 
 	messageChannel.setMessageListener((e) => {
-		if (e.data.type === 'download_progress') {
-			onDownloadProgress(e.data);
-		}
+
 	});
 
 	// Keep asking if the worker is alive until we get a response

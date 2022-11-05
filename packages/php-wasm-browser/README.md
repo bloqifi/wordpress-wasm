@@ -412,38 +412,3 @@ async function main() {
     });
 }
 ```
-
-## Utilities
-
-### cloneResponseMonitorProgress
-
-Clones a fetch Response object and returns a version 
-that calls the `onProgress` callback as the progress
-changes.
-
-_Parameters_
-
--   _response_ `Response`: The fetch Response object to clone.
--   _onProgress_ `(Progress) => undefined)`: The callback to call when the download progress changes.
-
-### EmscriptenDownloadMonitor
-
-Monitors the download progress of Emscripten modules
-
-Usage:
-
-```js
-  const downloadMonitor = new EmscriptenDownloadMonitor();
-	 const php = await startPHP(
-      phpLoaderModule,
-      'web',
-      downloadMonitor.phpArgs
-  );
-  downloadMonitor.addEventListener('progress', (e) => {
-    console.log( e.detail.progress);
-  })
-```
-
-_Type_
-
--   `EmscriptenDownloadMonitor`

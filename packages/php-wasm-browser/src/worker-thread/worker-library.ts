@@ -11,8 +11,6 @@ import { startPHP, PHPBrowser, PHPServer } from 'php-wasm';
 import type { PHP, JavascriptRuntime } from 'php-wasm';
 import { responseTo } from '../messaging';
 import { DEFAULT_BASE_URL } from '../utils';
-import EmscriptenDownloadMonitor from '../emscripten-download-monitor';
-import type { DownloadProgressEvent } from '../emscripten-download-monitor';
 import { getURLScope } from '../scope';
 export * from '../scope';
 
@@ -234,22 +232,12 @@ export async function loadPHPWithProgress(
 		acc[module.dependencyFilename] = module.dependenciesTotalSize;
 		return acc;
 	}, {});
-	const downloadMonitor = new EmscriptenDownloadMonitor(assetsSizes);
-	(downloadMonitor as any).addEventListener(
-		'progress',
-		(e: CustomEvent<DownloadProgressEvent>) =>
-			currentBackend.postMessageToParent({
-				type: 'download_progress',
-				...e.detail,
-			})
-	);
 
 	return await startPHP(
 		phpLoaderModule,
 		currentBackend.jsEnv,
 		{
-			...phpModuleArgs,
-			...downloadMonitor.phpArgs,
+			...phpModuleArgs
 		},
 		dataDependenciesModules
 	);

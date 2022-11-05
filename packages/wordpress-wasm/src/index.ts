@@ -2,27 +2,19 @@ import {
 	registerServiceWorker,
 	spawnPHPWorkerThread,
 	SpawnedWorkerThread,
-	DownloadProgressCallback,
 } from 'php-wasm-browser';
 import { wasmWorkerUrl, wasmWorkerBackend, serviceWorkerUrl } from './config';
 
-export async function bootWordPress(
-	config: BootConfiguration
-): Promise<SpawnedWorkerThread> {
-	const { onWasmDownloadProgress } = config;
+export async function bootWordPress(): Promise<SpawnedWorkerThread> {
+
 	assertNotInfiniteLoadingLoop();
 
 	const workerThread = await spawnPHPWorkerThread(
 		wasmWorkerBackend,
-		wasmWorkerUrl,
-		{ onDownloadProgress: onWasmDownloadProgress }
+		wasmWorkerUrl
 	);
 	await registerServiceWorker(serviceWorkerUrl);
 	return workerThread;
-}
-
-export interface BootConfiguration {
-	onWasmDownloadProgress: DownloadProgressCallback;
 }
 
 /**

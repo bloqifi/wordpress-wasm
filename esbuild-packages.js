@@ -1,9 +1,7 @@
 const { build } = require('esbuild');
 const yargs = require('yargs');
-const { execSync } = require('child_process');
 const chokidar = require('chokidar');
 const fs = require('fs');
-const path = require('path');
 const glob = require('glob');
 const crypto = require('crypto');
 
@@ -30,14 +28,13 @@ const argv = yargs(process.argv.slice(2))
 const CACHE_BUSTER = Math.random().toFixed(16).slice(2);
 
 // Provided by esbuild – see build.js in the repo root.
-const serviceWorkerOrigin =
-	process.env.SERVICE_WORKER_ORIGIN || 'http://127.0.0.1:8777';
+const serviceWorkerOrigin = process.env.SERVICE_WORKER_ORIGIN || 'http://127.0.0.1:8777';
 const serviceWorkerUrl = `${serviceWorkerOrigin}/service-worker.js`;
 const wasmWorkerBackend = process.env.WASM_WORKER_BACKEND || 'iframe';
 let workerThreadScript;
+
 if (wasmWorkerBackend === 'iframe') {
-	const wasmWorkerOrigin =
-		process.env.WASM_WORKER_ORIGIN || 'http://127.0.0.1:8777';
+	const wasmWorkerOrigin = process.env.WASM_WORKER_ORIGIN || 'http://127.0.0.1:8777';
 	workerThreadScript = `${wasmWorkerOrigin}/iframe-worker.html?${CACHE_BUSTER}`;
 } else {
 	workerThreadScript = `${serviceWorkerOrigin}/worker-thread.js?${CACHE_BUSTER}`;
@@ -151,14 +148,6 @@ async function main() {
 	await build({
 		...baseConfig,
 		outdir: globalOutDir,
-		entryPoints: {
-			'wordpress-wasm': 'packages/wordpress-wasm/build-module/index.js',
-			'service-worker':
-				'packages/wordpress-wasm/build-module/service-worker.js',
-			'worker-thread':
-				'packages/wordpress-wasm/build-module/worker-thread.js',
-			app: 'packages/wordpress-wasm/build-module/example-app.js',
-		},
 		nodePaths: ['packages'],
 	});
 
@@ -234,7 +223,8 @@ if (argv.watch) {
 	liveServer.start({
 		port: 8777,
 		root: __dirname + '/build',
-		open: '',
+		open: false, // When false, it won't load your browser by default.
+		//open: '/index.html',
 		file: 'index.html',
 		middleware: [
 			(req, res, next) => {
@@ -255,6 +245,7 @@ if (argv.watch) {
 		],
 	});
 
+	/*
 	liveServer.start({
 		port: 8778,
 		root: __dirname + '/build',
@@ -266,4 +257,5 @@ if (argv.watch) {
 			},
 		],
 	});
+	*/
 }

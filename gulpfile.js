@@ -1,13 +1,7 @@
-const os = require('os');
 const gulp = require('gulp');
-const replace = require('gulp-replace');
-const rename = require('gulp-rename');
 const path = require('path');
-const util = require('util');
 const glob = require('glob');
 const fs = require('fs');
-const rmAsync = util.promisify(fs.rm);
-const { spawn } = require('child_process');
 
 const {
 	build: buildWordPressInPackage,
@@ -63,16 +57,6 @@ async function buildModules() {
 	await esbuildModules();
 }
 
-async function buildDocGenerator() {
-	const { configFor } = require('./esbuild-packages');
-	const esConfig = configFor('typescript-reference-doc-generator');
-	const { build } = require('esbuild');
-	build({
-		...esConfig,
-		platform: 'node',
-	});
-}
-
 exports.copyBuiltWordPress = collectBuiltWordPress;
 exports.collectBuiltPHP = collectBuiltPHP;
 exports.copyBuiltAssets = gulp.parallel(collectBuiltWordPress, collectBuiltPHP);
@@ -83,14 +67,12 @@ exports.buildWordPress = gulp.series(
 );
 exports.buildPHP = gulp.series(buildPHPInPackage, collectBuiltPHP);
 exports.buildJS = buildModules;
-exports.buildDocGenerator = buildDocGenerator;
 
 exports.buildAll = gulp.parallel(
 	exports.buildHtaccess,
 	exports.buildWordPress,
 	exports.buildPHP,
-	exports.buildJS,
-	exports.buildDocGenerator
+	exports.buildJS
 );
 
 function asyncPipe(pipe) {
