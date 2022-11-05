@@ -6,29 +6,31 @@ const query = new URL(document.location.href).searchParams;
 
 const wpFrame = document.querySelector('#wp') as HTMLIFrameElement;
 
+// Manage the address bar
 function setupAddressBar(wasmWorker) {
-	// Manage the address bar
-	const addressBar = document.querySelector(
-		'#address-bar'
-	)! as HTMLInputElement;
+
 	wpFrame.addEventListener('load', (e: any) => {
-		addressBar.value = wasmWorker.internalUrlToPath(
+
+		const newUrl = wasmWorker.internalUrlToPath(
 			e.currentTarget!.contentWindow.location.href
 		);
+
+		window.history.pushState({}, '', `/#${newUrl}`);
 	});
 
-	document
-		.querySelector('#address-bar-form')!
-		.addEventListener('submit', (e) => {
-			e.preventDefault();
-			let requestedPath = addressBar.value;
-			// Ensure a trailing slash when requesting directory paths
-			const isDirectory = !requestedPath.split('/').pop()!.includes('.');
-			if (isDirectory && !requestedPath.endsWith('/')) {
-				requestedPath += '/';
-			}
-			wpFrame.src = wasmWorker.pathToInternalUrl(requestedPath);
-		});
+	window.addEventListener('hashchange', function() {
+		
+		let requestedPath = window.location.hash.slice(1);
+
+		// Ensure a trailing slash when requesting directory paths
+		const isDirectory = !requestedPath.split('/').pop()!.includes('.');
+		if (isDirectory && !requestedPath.endsWith('/')) {
+			requestedPath += '/';
+		}
+
+		wpFrame.src = wasmWorker.pathToInternalUrl(requestedPath);
+
+	}, false);
 }
 
 class FetchProgressBar {
@@ -103,10 +105,8 @@ async function main() {
 	const workerThread = await bootWordPress({
 		onWasmDownloadProgress: progressBar.onDataChunk,
 	});
-	const appMode = query.get('mode') === 'seamless' ? 'seamless' : 'browser';
-	if (appMode === 'browser') {
-		setupAddressBar(workerThread);
-	}
+
+	setupAddressBar(workerThread);
 
 	if (preinstallPlugin) {
 		// Download the plugin file

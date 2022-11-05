@@ -234,8 +234,8 @@ if (argv.watch) {
 	liveServer.start({
 		port: 8777,
 		root: __dirname + '/build',
-		open: '/wordpress.html',
-		file: 'wordpress.html',
+		open: '',
+		file: 'index.html',
 		middleware: [
 			(req, res, next) => {
 				if (req.url.startsWith('/scope:')) {
