@@ -37,7 +37,7 @@ const wasmWorkerBackend = process.env.WASM_WORKER_BACKEND || 'iframe';
 let workerThreadScript;
 if (wasmWorkerBackend === 'iframe') {
 	const wasmWorkerOrigin =
-		process.env.WASM_WORKER_ORIGIN || 'http://127.0.0.1:8778';
+		process.env.WASM_WORKER_ORIGIN || 'http://127.0.0.1:8777';
 	workerThreadScript = `${wasmWorkerOrigin}/iframe-worker.html?${CACHE_BUSTER}`;
 } else {
 	workerThreadScript = `${serviceWorkerOrigin}/worker-thread.js?${CACHE_BUSTER}`;
@@ -76,7 +76,7 @@ const configFor = (packageName, entrypoints = ['index']) => {
 		entryPoints: Object.fromEntries(
 			entrypoints.map((entrypoint) => [
 				entrypoint,
-				`packages/${packageName}/src/${entrypoint}.js`,
+				`packages/${packageName}/src/${entrypoint}.ts`,
 			])
 		),
 		format: 'cjs',

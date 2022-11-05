@@ -10,7 +10,7 @@ import {
 	loadPHPWithProgress,
 	initializeWorkerThread,
 	setURLScope,
-} from 'php-wasm-browser/src/worker-thread/worker-library';
+} from 'php-wasm-browser/worker-thread';
 import { phpJsCacheBuster, wpJsCacheBuster, wordPressSiteUrl } from './config';
 import { isUploadedFilePath } from './utils';
 

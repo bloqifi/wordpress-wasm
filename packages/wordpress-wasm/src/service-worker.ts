@@ -1,7 +1,7 @@
 import {
 	initializeServiceWorker,
 	seemsLikeAPHPServerPath,
-} from 'php-wasm-browser/src/service-worker/worker-library';
+} from 'php-wasm-browser/service-worker';
 import { isUploadedFilePath } from './utils';
 
 initializeServiceWorker({
