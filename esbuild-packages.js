@@ -193,13 +193,6 @@ function logBuiltFile(outPath) {
 	console.log(`  ${outPathToLog}`);
 }
 
-function fileSize(filePath) {
-	if (!fs.existsSync(filePath)) {
-		return 0;
-	}
-	return fs.statSync(filePath).size;
-}
-
 function hashFiles(filePaths) {
 	// if all files exist
 	if (!filePaths.every(fs.existsSync)) {
@@ -217,45 +210,38 @@ function sha256(buffer) {
 }
 
 if (argv.watch) {
-	const liveServer = require('live-server');
-	const request = require('request');
 
-	liveServer.start({
-		port: 8777,
-		root: __dirname + '/build',
-		open: false, // When false, it won't load your browser by default.
-		//open: '/index.html',
-		file: 'index.html',
-		middleware: [
-			(req, res, next) => {
-				if (req.url.startsWith('/scope:')) {
-					req.url = '/' + req.url.split('/').slice(2).join('/');
-				} else if (req.url.startsWith('/plugin-proxy')) {
-					const url = new URL(req.url, 'http://127.0.0.1:8777');
-					const pluginName = url.searchParams
-						.get('plugin')
-						.replace(/[^a-zA-Z0-9\.\-_]/, '');
-					request(
-						`https://downloads.wordpress.org/plugin/${pluginName}`
-					).pipe(res);
-					return;
-				}
-				next();
-			},
-		],
+	const express = require('express');
+	const app = express();
+
+	app.use(express.static('build'));
+
+	app.use((req, res, next) => {
+
+		if (req.url.startsWith('/scope:')) {
+
+			req.url = '/' + req.url.split('/').slice(2).join('/');
+		}
+		else if (req.url.startsWith('/plugin-proxy')) {
+
+			/*
+			const url = new URL(req.url, 'http://127.0.0.1:8777');
+			const pluginName = url.searchParams.get('plugin').replace(/[^a-zA-Z0-9\.\-_]/, '');
+
+			fetch(`https://downloads.wordpress.org/plugin/${pluginName}`)
+			.then(response => {
+				response.body.pipe(res);
+			});
+			
+			console.log('HERE2')
+
+			*/
+
+			res.end();
+		}
+
+		res.sendFile( __dirname + '/build/index.html');
 	});
 
-	/*
-	liveServer.start({
-		port: 8778,
-		root: __dirname + '/build',
-		open: false,
-		middleware: [
-			(req, res, next) => {
-				res.setHeader('Origin-Agent-Cluster', '?1');
-				next();
-			},
-		],
-	});
-	*/
+	app.listen(8777);
 }

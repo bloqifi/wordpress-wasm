@@ -233,17 +233,17 @@ RUN if [ "$EMSCRIPTEN_ENVIRONMENT" = "web" ]; then \
     mv /tmp/php.js /root/output/php.js; \
     fi;
 
+# Inject brotli decompress here.
+RUN cat /root/output/php.js \
+        | sed "s/WebAssembly.instantiate(binary,info)/WebAssembly.instantiate(BrotliDecode(new Uint8Array(binary)),info)/" \
+        > /tmp/php.js && \
+    mv /tmp/php.js /root/output/php.js;	
+
 # The hardcoded ENVIRONMENT variable isn't very useful.
 # For example, the web and worker loaders only differ by a boolean flag.
 # Let's make it customizable via the wrapper args (see esm-prefix.js).
 RUN cat /root/output/php.js \
         | sed -E 's/ENVIRONMENT_IS_([A-Z]+)\s*=\s*(true|false)/ENVIRONMENT_IS_\1=Env==="\1"/g' \
-        > /tmp/php.js && \
-    mv /tmp/php.js /root/output/php.js;
-
-# Don't know where php.js source is, so we inject brotli decompress here.
-RUN cat /root/output/php.js \
-        | sed "s/WebAssembly.instantiate(binary,info)/WebAssembly.instantiate(BrotliDecode(new Uint8Array(binary)),info)/" \
         > /tmp/php.js && \
     mv /tmp/php.js /root/output/php.js;
 

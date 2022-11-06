@@ -6,7 +6,6 @@
 	"private": "true",
 	"scripts": {
 		"dev": "node esbuild-packages.js --watch",
-		"dev:docs:html": "vitepress dev docs/api",
 		"build": "gulp build:js",
 		"build:all": "npm run clean; gulp buildAll",
 		"build:js": "gulp buildJS",
@@ -15,7 +14,6 @@
 		"build:php": "npm run build:php:web",
 		"build:php:web": "PLATFORM=web gulp buildPHP",
 		"build:php:node": "PLATFORM=node gulp buildPHP",
-		"build:api-docs": "bash scripts/refresh-api-docs.sh",
 		"clean": "rm -rf build/* packages/*/build-*/*",
 		"format": "prettier --write packages/src",
 		"lint:js": "eslint \"./packages/src/**/*.{js,mjs,ts}\"",
@@ -54,15 +52,13 @@
 		"eslint-plugin-jsx-a11y": "^6.6.1",
 		"eslint-plugin-react": "^7.31.1",
 		"eslint-plugin-react-hooks": "^4.6.0",
+		"express": "^4.18.2",
 		"gulp": "^4.0.2",
 		"gulp-rename": "^2.0.0",
 		"gulp-replace": "^1.1.3",
-		"live-server": "^1.2.2",
 		"npm-run-all": "^4.1.5",
 		"prettier": "^2.7.1",
-		"request": "^2.88.2",
 		"typescript": "4.8.4",
-		"vitepress": "^1.0.0-alpha.26",
 		"vue": "^3.2.41"
 	}
 }

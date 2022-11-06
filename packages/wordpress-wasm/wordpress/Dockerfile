@@ -27,7 +27,7 @@ RUN curl https://raw.githubusercontent.com/aaemnnosttv/wp-sqlite-db/master/src/d
    | sed 's/$exploded_parts = $values_data;/$exploded_parts = array( $values_data );/g' \
    > wordpress/wp-content/db.php && \
    # Required by the drop-in SQLite integration plugin:
-   cp wordpress/wp-config-sample.php wordpress/wp-config.php 
+   cp wordpress/wp-config-sample.php wordpress/wp-config.php
 
 # Separate WordPress static files
 RUN cp -r wordpress wordpress-static && \
@@ -135,7 +135,7 @@ RUN export CACHE_BUSTER=$(md5sum /root/output/wp.data | awk '{print $1}'); \
         > /tmp/wp.js && \
     mv /tmp/wp.js /root/output/wp.js;
 
-# Don't know where wp.js source is, so we inject brotli decompress here.
+# Inject brotli decompress here.
 RUN cat /root/output/wp.js \
         | sed "s/callback(packageData)/callback(BrotliDecode(new Uint8Array(packageData)).buffer)/" \
         > /tmp/wp.js && \
