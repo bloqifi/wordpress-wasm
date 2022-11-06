@@ -27,8 +27,8 @@ startWordPress().then((browser) =>
 
 async function startWordPress() {
 	const [phpLoaderModule, wpLoaderModule] = await Promise.all([
-		import(`/php.js?${phpJsCacheBuster}`),
-		import(`/wp.js?${wpJsCacheBuster}`),
+		import(`./php.js?${phpJsCacheBuster}`),
+		import(`./wp.js?${wpJsCacheBuster}`),
 	]);
 
 	const php = await loadPHPWithProgress(phpLoaderModule, [wpLoaderModule]);

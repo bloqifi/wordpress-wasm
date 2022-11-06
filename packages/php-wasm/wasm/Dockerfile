@@ -221,7 +221,7 @@ COPY ./build-assets/brotli-decode.js ./build-assets/esm-prefix.js ./build-assets
 
 # make brotli compressed .wasm file
 RUN brotli -q 11 -f -o /root/output/php.wasm.br /root/output/php.wasm
-RUN cp /root/output/php.wasm.br /root/output/php.wasm
+RUN mv /root/output/php.wasm.br /root/output/php.wasm
 
 # On the web, it's useful to add a "cache busting" query string to the .wasm file URL.
 # This tells web browsers it's a new file and they should reload it.

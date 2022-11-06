@@ -28,16 +28,15 @@ const argv = yargs(process.argv.slice(2))
 const CACHE_BUSTER = Math.random().toFixed(16).slice(2);
 
 // Provided by esbuild – see build.js in the repo root.
-const serviceWorkerOrigin = process.env.SERVICE_WORKER_ORIGIN || 'http://127.0.0.1:8777';
-const serviceWorkerUrl = `${serviceWorkerOrigin}/service-worker.js`;
-const wasmWorkerBackend = process.env.WASM_WORKER_BACKEND || 'iframe';
+const WorkerOrigin = 'http://127.0.0.1:8777';
+const serviceWorkerUrl = `${WorkerOrigin}/service-worker.js`;
+const wasmWorkerBackend = 'iframe';
 let workerThreadScript;
 
 if (wasmWorkerBackend === 'iframe') {
-	const wasmWorkerOrigin = process.env.WASM_WORKER_ORIGIN || 'http://127.0.0.1:8777';
-	workerThreadScript = `${wasmWorkerOrigin}/iframe-worker.html?${CACHE_BUSTER}`;
+	workerThreadScript = `${WorkerOrigin}/iframe-worker.html?${CACHE_BUSTER}`;
 } else {
-	workerThreadScript = `${serviceWorkerOrigin}/worker-thread.js?${CACHE_BUSTER}`;
+	workerThreadScript = `${WorkerOrigin}/worker-thread.js?${CACHE_BUSTER}`;
 }
 
 const baseConfig = {
@@ -148,6 +147,14 @@ async function main() {
 	await build({
 		...baseConfig,
 		outdir: globalOutDir,
+		entryPoints: {
+			'wordpress-wasm': 'packages/wordpress-wasm/build-module/index.js',
+			'service-worker':
+				'packages/wordpress-wasm/build-module/service-worker.js',
+			'worker-thread':
+				'packages/wordpress-wasm/build-module/worker-thread.js',
+			app: 'packages/wordpress-wasm/build-module/example-app.js',
+		},
 		nodePaths: ['packages'],
 	});
 
@@ -216,6 +223,12 @@ if (argv.watch) {
 
 	app.use(express.static('build'));
 
+	app.get('/', (req, res, next) => {
+
+		res.sendFile( __dirname + '/build/index.html');
+	});
+
+	/*
 	app.use((req, res, next) => {
 
 		if (req.url.startsWith('/scope:')) {
@@ -224,7 +237,6 @@ if (argv.watch) {
 		}
 		else if (req.url.startsWith('/plugin-proxy')) {
 
-			/*
 			const url = new URL(req.url, 'http://127.0.0.1:8777');
 			const pluginName = url.searchParams.get('plugin').replace(/[^a-zA-Z0-9\.\-_]/, '');
 
@@ -232,16 +244,13 @@ if (argv.watch) {
 			.then(response => {
 				response.body.pipe(res);
 			});
-			
-			console.log('HERE2')
-
-			*/
 
 			res.end();
 		}
 
 		res.sendFile( __dirname + '/build/index.html');
 	});
+	*/
 
 	app.listen(8777);
 }

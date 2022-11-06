@@ -125,7 +125,7 @@ COPY ./build-assets/brotli-decode.js ./build-assets/esm-prefix.js ./build-assets
 
 # make brotli compressed .wasm file
 RUN brotli -q 11 -f -o /root/output/wp.data.br /root/output/wp.data
-RUN cp /root/output/wp.data.br /root/output/wp.data
+RUN mv /root/output/wp.data.br /root/output/wp.data
 
 # It's useful to add a "cache busting" query string to the .data file URL.
 # This tells web browsers it's a new file and they should reload it.
